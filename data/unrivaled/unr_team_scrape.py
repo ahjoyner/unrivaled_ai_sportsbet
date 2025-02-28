@@ -1,4 +1,3 @@
-# File: team_stats_scraper.py
 import requests
 import re
 import pandas as pd
@@ -8,27 +7,39 @@ from bs4 import BeautifulSoup
 # --------------------------
 # PAPG Calculation Function
 # --------------------------
-def calculate_papg(game_stats):
+def calculate_papg(games):
     """
-    Calculate Points Allowed Per Game (PAPG) for each team.
+    Calculate Points Allowed Per Game (PAPG) for each team using only the `games` table.
     """
-    if game_stats.empty:
+    if games.empty:
         return {}
 
-    # Group by team and game to get unique opponent_pts per game
-    unique_games = (
-        game_stats.groupby(["team", "game_date", "opponent"])
-        .agg({"opponent_pts": "first"})
-        .reset_index()
-    )
-    
+    # Create a list to store PAPG for each team
+    papg_dict = {}
+
+    # Iterate through each game and calculate PAPG
+    for _, row in games.iterrows():
+        home_team = row["home_team"]
+        away_team = row["away_team"]
+        home_team_score = row["home_team_score"]
+        away_team_score = row["away_team_score"]
+
+        # Points allowed by home team = away_team_score
+        if home_team not in papg_dict:
+            papg_dict[home_team] = {"total_pts_allowed": 0, "games_played": 0}
+        papg_dict[home_team]["total_pts_allowed"] += away_team_score
+        papg_dict[home_team]["games_played"] += 1
+
+        # Points allowed by away team = home_team_score
+        if away_team not in papg_dict:
+            papg_dict[away_team] = {"total_pts_allowed": 0, "games_played": 0}
+        papg_dict[away_team]["total_pts_allowed"] += home_team_score
+        papg_dict[away_team]["games_played"] += 1
+
     # Calculate average PAPG for each team
-    papg_dict = (
-        unique_games.groupby("team")["opponent_pts"]
-        .mean()
-        .round(1)
-        .to_dict()
-    )
+    for team, data in papg_dict.items():
+        papg_dict[team] = round(data["total_pts_allowed"] / data["games_played"], 1)
+
     return papg_dict
 
 # --------------------------
@@ -47,27 +58,45 @@ def scrape_team_stats():
         cols = row.find_all("td")
         team_name = cols[1].find("a").text.strip()
         stats = [col.text.strip() for col in cols[2:]]
-        teams.append([team_name] + stats)
+        
+        # Scrape team logo URL
+        team_page_url = f"https://www.unrivaled.basketball/{team_name.lower().replace(' ', '-')}"
+        team_page_response = requests.get(team_page_url)
+        team_page_soup = BeautifulSoup(team_page_response.content, "html.parser")
+        
+        # Extract logo URL
+        logo_url = "https://www.unrivaled.basketball" + team_page_soup.select_one("header > div > a > img")["src"]
+        
+        teams.append([team_name, logo_url] + stats)
 
     # Create DataFrame with basic stats
-    columns = ["team", "gp", "pts", "offensive_rebounds", "defensive_rebounds", 
+    columns = ["team", "logo_url", "gp", "pts", "offensive_rebounds", "defensive_rebounds", 
                "reb", "ast", "stl", "blk", "turnovers", "pf"]
     team_stats_df = pd.DataFrame(teams, columns=columns)
 
     # Convert numeric columns
-    numeric_cols = columns[1:]
+    numeric_cols = columns[2:]
     team_stats_df[numeric_cols] = team_stats_df[numeric_cols].apply(pd.to_numeric, errors='coerce')
 
     try:
-        # Load game stats and calculate PAPG
-        game_stats = pd.read_csv("data/unrivaled/csv/unrivaled_game_stats.csv")
-        papg_dict = calculate_papg(game_stats)
+        # Load games table from SQL database using mysql.connector
+        connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="Joynera4919",
+            database="unrivaled"
+        )
+        games = pd.read_sql_query("SELECT * FROM games", connection)
+        connection.close()
+
+        # Calculate PAPG
+        papg_dict = calculate_papg(games)
         papg_df = pd.DataFrame(list(papg_dict.items()), columns=["team", "papg"])
         
         # Merge PAPG into team stats
         team_stats_df = pd.merge(team_stats_df, papg_df, on="team", how="left")
-    except FileNotFoundError:
-        print("Warning: game_stats.csv not found. PAPG will not be included.")
+    except Exception as e:
+        print(f"Warning: {str(e)}. PAPG will not be included.")
         team_stats_df["papg"] = None
 
     # Merge with standings
@@ -117,6 +146,7 @@ def insert_team_stats_into_database(team_stats_df):
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS team_stats (
             team VARCHAR(50) PRIMARY KEY,
+            logo_url VARCHAR(255),
             gp INT,
             pts FLOAT,
             offensive_rebounds FLOAT,
@@ -140,9 +170,9 @@ def insert_team_stats_into_database(team_stats_df):
         for _, row in team_stats_df.iterrows():
             sql_query = """
             INSERT INTO team_stats (
-                team, gp, pts, offensive_rebounds, defensive_rebounds, reb, ast, stl, blk, 
+                team, logo_url, gp, pts, offensive_rebounds, defensive_rebounds, reb, ast, stl, blk, 
                 turnovers, pf, wins, losses, win_pct, games_behind, streak, papg
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE
                 gp = VALUES(gp), pts = VALUES(pts), offensive_rebounds = VALUES(offensive_rebounds), 
                 defensive_rebounds = VALUES(defensive_rebounds), reb = VALUES(reb),
@@ -150,10 +180,11 @@ def insert_team_stats_into_database(team_stats_df):
                 turnovers = VALUES(turnovers), pf = VALUES(pf),
                 wins = VALUES(wins), losses = VALUES(losses), win_pct = VALUES(win_pct),
                 games_behind = VALUES(games_behind), streak = VALUES(streak),
-                papg = VALUES(papg)
+                papg = VALUES(papg), logo_url = VALUES(logo_url)
             """
             data = (
                 row["team"], 
+                row["logo_url"],
                 row.get("gp", 0), 
                 row.get("pts", 0),
                 row.get("offensive_rebounds", 0),

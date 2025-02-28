@@ -36,17 +36,18 @@ def main():
 
     # Fetch player data and merge with projections
     for projection in projections["data"]:
-        player_id = projection["relationships"]["new_player"]["data"]["id"]
-        player_data = fetch_player_data(player_id)
-        if player_data:
-            enriched_players.append({
-                "Player ID": player_id,
-                "Player Data": player_data["data"]["attributes"],
-                "Projection Data": projection["attributes"]
-            })
+        if projection["attributes"].get("stat_display_name") == "Points":
+            player_id = projection["relationships"]["new_player"]["data"]["id"]
+            player_data = fetch_player_data(player_id)
+            if player_data:
+                enriched_players.append({
+                    "Player ID": player_id,
+                    "Player Data": player_data["data"]["attributes"],
+                    "Projection Data": projection["attributes"]
+                })
 
     # Write enriched data to unr_enriched_players.json
-    with open("data/unrivaled/unr_enriched_players.json", "w") as f:
+    with open("/Users/ajoyner/Desktop/unrivaled_ai_sportsbet/data/unrivaled/unr_enriched_players.json", "w") as f:
         json.dump(enriched_players, f, indent=4)
 
     print("Enriched players data saved to unr_enriched_players.json.")

@@ -3,14 +3,31 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import mysql.connector
 import re
+import unicodedata
+from difflib import get_close_matches
 
 # Base URL for Unrivaled
 BASE_URL = "https://www.unrivaled.basketball"
+
+def normalize_text(text):
+    return unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('utf-8')
 
 def scrape_play_by_play(game_id, game_date):
     """
     Scrape play-by-play data for a specific game.
     """
+    connection = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="Joynera4919",
+        database="unrivaled"
+    )
+    cursor = connection.cursor()
+
+    # Load player stats
+    cursor.execute("SELECT name FROM player_stats")
+    player_stats = {row[0] for row in cursor.fetchall()}
+
     url = f"{BASE_URL}/game/{game_id}/play-by-play"
     response = requests.get(url)
     if response.status_code != 200:
@@ -41,6 +58,12 @@ def scrape_play_by_play(game_id, game_date):
         play_desc = ' '.join([
             text.strip() for text in tds[1].find_all(string=True, recursive=False)
         ])
+
+        # Replace double spaces with a single space in the play description
+        play_desc = re.sub(r"\s+", " ", play_desc).strip()
+        play_desc = normalize_text(play_desc)
+        # print(play_desc)
+
         team_img = tds[1].find("img", alt=True)
         team = team_img["alt"].replace(" Logo", "") if team_img and "Logo" in team_img["alt"] else None
 
@@ -49,7 +72,8 @@ def scrape_play_by_play(game_id, game_date):
         home_score, away_score = score.split("-") if "-" in score else ("", "")
 
         # Extract player from play description
-        player = extract_player(play_desc)
+        player = extract_player(play_desc, player_stats)
+        # print(player)
 
         plays.append({
             "game_id": game_id,
@@ -67,24 +91,46 @@ def scrape_play_by_play(game_id, game_date):
         "game_id", "game_date", "quarter", "time", "play_description",
         "home_score", "away_score", "team", "player"
     ]
+    # for play in plays:
+        # print(play)
     return pd.DataFrame(plays, columns=columns)
 
-def extract_player(play_desc):
+def extract_player(play_desc, player_stats):
+    play_desc = normalize_text(play_desc)
     """
     Extract the player name from the play description using regex.
+    If an exact match is not found in player_stats, attempt to find a close match.
     """
     patterns = [
-        r"^([A-Za-z ]+?) (makes|misses|assist|defensive rebound|offensive rebound|bad pass|personal foul|steal|block|turnover|free throw)",
-        r"Rebound by ([A-Za-z ]+?)(?=\s*\()",
-        r"assist by ([A-Za-z ]+?)(?=\s*\()",
-        r"Foul by ([A-Za-z ]+?)(?=\s*\()",
+        r"^([A-Za-z]+(?: [A-Za-z\-]+)+) (makes|misses|assist|defensive rebound|offensive rebound|bad pass|personal foul|steal|block|turnover|free throw|bad pass turnover)",
+        r"([A-Za-z]+(?: [A-Za-z\-]+)+)(?=\s*\() defensive rebound",
+        r"([A-Za-z]+(?: [A-Za-z\-]+)+)(?=\s*\() offensive rebound",
+        r"([A-Za-z]+(?: [A-Za-z\-]+)+)(?=\s*\() assist",
+        r"([A-Za-z]+(?: [A-Za-z\-]+)+)(?=\s*\() personal foul",
+        r"([A-Za-z]+(?: [A-Za-z\-]+)+) bad pass turnover",
     ]
     
+    extracted_player = None
+
+    # Try extracting player name using regex
     for pattern in patterns:
         match = re.search(pattern, play_desc)
         if match:
-            return match.group(1).strip()
-    return None  # No player involved
+            extracted_player = match.group(1).strip()
+            break
+
+    if extracted_player:
+        # If the player exists in player_stats, return exact match
+        if extracted_player in player_stats:
+            return extracted_player
+
+        # Otherwise, find the closest match from player_stats
+        closest_matches = get_close_matches(extracted_player, player_stats, n=1, cutoff=0.8)
+        if closest_matches:
+            return closest_matches[0]  # Use the closest matched name
+
+    return None  # No valid match found
+
 
 def insert_play_by_play_into_database(play_by_play_df):
     try:
@@ -113,6 +159,8 @@ def insert_play_by_play_into_database(play_by_play_df):
             INSERT INTO play_by_play 
                 (game_id, game_date, quarter, time, play_description, home_score, away_score, team, player)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE
+                player = VALUES(player);
             """
             cursor.execute(sql_query, data)
 

@@ -1,0 +1,48 @@
+[
+    {
+        "game": "Laces-@-Lunar_Owls",
+        "teams": {
+            "Laces": {
+                "spread": {
+                    "points": "+5.5",
+                    "odds": "-113"
+                },
+                "moneyline": "+220"
+            },
+            "Lunar Owls": {
+                "spread": {
+                    "points": "-5.5",
+                    "odds": "-113"
+                },
+                "moneyline": "-295"
+            },
+            "total_points": {
+                "points": "143.5",
+                "odds": "-113"
+            }
+        }
+    },
+    {
+        "game": "Vinyl-@-Phantom",
+        "teams": {
+            "Vinyl": {
+                "spread": {
+                    "points": "-3.5",
+                    "odds": "-113"
+                },
+                "moneyline": "-156"
+            },
+            "Phantom": {
+                "spread": {
+                    "points": "+3.5",
+                    "odds": "-113"
+                },
+                "moneyline": "+122"
+            },
+            "total_points": {
+                "points": "133.5",
+                "odds": "-113"
+            }
+        }
+    }
+]
