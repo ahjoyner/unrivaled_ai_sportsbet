@@ -2,9 +2,14 @@ import requests
 import json
 from bs4 import BeautifulSoup
 import pandas as pd
-import mysql.connector
+import firebase_admin
+from firebase_admin import credentials, firestore
 from difflib import SequenceMatcher
 import unicodedata
+
+cred = credentials.Certificate("secrets/firebase_key.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client(database_id="unrivaled-db")
 
 def normalize_text(text):
     return unicodedata.normalize('NFKD', text).encode('ASCII', 'ignore').decode('utf-8')
@@ -81,72 +86,28 @@ def scrape_player_stats(enriched_data):
     player_stats_df = pd.DataFrame(players, columns=columns)
     return player_stats_df
 
-# Function to insert data into MySQL database
-def insert_into_database(player_stats_df):
-    try:
-        # Connect to the database
-        connection = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="Joynera4919",
-            database="unrivaled"
-        )
-        cursor = connection.cursor()
-        
-        # Insert each row into the player_stats table
-        for _, row in player_stats_df.iterrows():
-            if not row["player_id"]:
-                print(f"Skipping player '{row['name']}' due to missing player_id.")
-                continue
+def insert_into_firestore(player_stats_df):
+    for _, row in player_stats_df.iterrows():
+        player_name = row["name"]
+        player_data = row.to_dict()
+        del player_data["name"]
 
-            sql_query = """
-            INSERT INTO player_stats (
-                player_id, name, team, position, headshot_url, gp, min, pts, offensive_rebounds, 
-                defensive_rebounds, reb, ast, stl, blk, 
-                turnovers, pf
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE
-                gp = VALUES(gp), min = VALUES(min), pts = VALUES(pts),
-                offensive_rebounds = VALUES(offensive_rebounds), 
-                defensive_rebounds = VALUES(defensive_rebounds),
-                reb = VALUES(reb), ast = VALUES(ast),
-                stl = VALUES(stl), blk = VALUES(blk),
-                turnovers = VALUES(turnovers), pf = VALUES(pf),
-                position = VALUES(position),
-                headshot_url = VALUES(headshot_url);
-            """
-            data = (
-                row["player_id"], row["name"], row["team"], row["position"], row["headshot_url"], 
-                int(row["gp"]), float(row["min"]), float(row["pts"]),
-                float(row["offensive_rebounds"]), float(row["defensive_rebounds"]), float(row["reb"]),
-                float(row["ast"]), float(row["stl"]), float(row["blk"]),
-                float(row["turnovers"]), float(row["pf"])
-            )
-            cursor.execute(sql_query, data)
-        
-        # Commit the transaction
-        connection.commit()
-        print(f"Inserted/Updated {len(player_stats_df)} records into the player_stats table.")
-    
-    except mysql.connector.Error as e:
-        print(f"Error: {e}")
-    
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
+        db.collection("players").document(player_name).set(player_data)
+
+    print(f"Inserted/Updated {len(player_stats_df)} records into Firestore.")
+
 
 # Main execution
 if __name__ == "__main__":
     # Load enriched player data
-    with open("/Users/ajoyner/Desktop/unrivaled_ai_sportsbet/data/unrivaled/unr_enriched_players.json", "r") as f:
+    with open("/Users/ajoyner/unrivaled_ai_sportsbet/data/unrivaled/unr_enriched_players.json", "r") as f:
         enriched_data = json.load(f)
     
     # Scrape player stats
     player_stats_df = scrape_player_stats(enriched_data)
     
     # Insert scraped data into the MySQL database
-    insert_into_database(player_stats_df)
+    insert_into_firestore(player_stats_df)
     player_stats_df.to_csv("data/unrivaled/csv/unrivaled_player_stats.csv", index=False)
     
     # Print the scraped DataFrame (optional)

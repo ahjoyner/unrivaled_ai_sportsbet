@@ -567,7 +567,7 @@ async def analyze_player(player, player_teams):
 
 # Main Function to Run All Analyses
 async def main():
-    with open("/Users/ajoyner/Desktop/unrivaled_ai_sportsbet/data/unrivaled/unr_enriched_players.json", "r") as f:
+    with open("/Users/ajoyner/unrivaled_ai_sportsbet/data/unrivaled/unr_enriched_players.json", "r") as f:
         enriched_data = json.load(f)
 
     # Fetch player teams from the database
