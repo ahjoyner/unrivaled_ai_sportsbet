@@ -13,7 +13,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { db } from "./firebase"; // Import Firestore instance
+import { db } from "@/firebase"; // Import Firestore instance
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 
 const cleanReasonText = (text) => {
