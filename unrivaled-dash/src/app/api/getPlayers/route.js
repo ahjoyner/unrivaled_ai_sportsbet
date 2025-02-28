@@ -2,7 +2,7 @@ import admin from "firebase-admin";
 import { NextResponse } from "next/server";
 
 // Parse the Firebase service account key from the environment variable
-const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
+const serviceAccount = JSON.parse(process.env.NEXT_PUBLIC_FIREBASE_KEY);
 
 // Initialize Firebase Admin SDK
 if (!admin.apps.length) {

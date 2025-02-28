@@ -44,3 +44,4 @@ firebase_key.json
 # Ignore database files
 *.sqlite3
 *.db
+.env*.local
