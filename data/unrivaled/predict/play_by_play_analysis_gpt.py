@@ -1,5 +1,5 @@
-import mysql.connector
-from mysql.connector import Error
+import firebase_admin
+from firebase_admin import credentials, firestore
 import json
 import aiohttp
 import asyncio
@@ -15,6 +15,10 @@ from celery import Celery
 celery_app = Celery('play_by_play_analysis_gpt',
                     broker='redis://localhost:6379/0',
                     backend='redis://localhost:6379/0')
+
+cred = credentials.Certificate("secrets/firebase_key.json")
+firebase_admin.initialize_app(cred)
+db = firestore.client(database_id="unrivaled-db")
 
 # MySQL Database Configuration
 DB_CONFIG = {
@@ -38,21 +42,14 @@ DEEPSEEK_MODEL = "deepseek-chat"
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
 
 def get_player_teams():
-    try:
-        connection = mysql.connector.connect(**DB_CONFIG)
-        if connection.is_connected():
-            cursor = connection.cursor(dictionary=True)
-            query = "SELECT name, team FROM player_stats"
-            cursor.execute(query)
-            player_teams = {row["name"].lower(): row["team"] for row in cursor.fetchall()}
-            return player_teams
-    except mysql.connector.Error as e:
-        print(f"Error fetching player team data: {e}", file=sys.stderr)
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
-    return {}
+    player_teams = {}
+    player_docs = db.collection("players").stream()
+
+    for doc in player_docs:
+        player_data = doc.to_dict()
+        player_teams[doc.id.lower()] = player_data["team"]  # Use player_name as ID
+
+    return player_teams
 
 def fetch_injury_reports():
     """
@@ -60,7 +57,7 @@ def fetch_injury_reports():
     """
     try:
         # Example: Load from a JSON file
-        with open("/Users/ajoyner/Desktop/unrivaled_ai_sportsbet/data/unrivaled/injury_reports.json", "r") as f:
+        with open("/Users/ajoyner/unrivaled_ai_sportsbet/data/unrivaled/injury_reports.json", "r") as f:
             injury_data = json.load(f)
         return injury_data.get("injury_reports", [])
     except Exception as e:
@@ -69,47 +66,9 @@ def fetch_injury_reports():
 
 
 def fetch_plays_from_db(game_id, player_name):
-    try:
-        connection = mysql.connector.connect(**DB_CONFIG)
-        if connection.is_connected():
-            cursor = connection.cursor(dictionary=True)
-            
-            # Query to fetch plays involving the player (scoring, assists, rebounds, turnovers, etc.)
-            query = """
-                SELECT * FROM play_by_play
-                WHERE game_id = %s AND (
-                    LOWER(player) = LOWER(%s) OR 
-                    play_description LIKE %s OR 
-                    play_description LIKE %s OR 
-                    play_description LIKE %s OR 
-                    play_description LIKE %s
-                )
-                ORDER BY time ASC
-            """
-            # Parameters for the query:
-            # 1. game_id
-            # 2. player_name (exact match)
-            # 3. %assist% (plays where the player assisted)
-            # 4. %makes% (plays where the player scored)
-            # 5. %rebound% (plays where the player grabbed a rebound)
-            # 6. %turnover% (plays where the player committed a turnover)
-            cursor.execute(query, (
-                game_id, 
-                player_name, 
-                f"%assist%{player_name}%", 
-                f"%makes%{player_name}%", 
-                f"%rebound%{player_name}%", 
-                f"%turnover%{player_name}%"
-            ))
-            
-            plays = cursor.fetchall()
-            return plays
-    except Error as e:
-        print(f"Error fetching data from MySQL: {e}", file=sys.stderr)
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
+    plays_ref = db.collection("games").document(game_id).collection("play_by_play").stream()
+    plays = [doc.to_dict() for doc in plays_ref if doc.to_dict().get("player", "").lower() == player_name.lower()]
+    return plays
 
 def get_game_ids_for_player(player_name):
     try:
@@ -215,82 +174,24 @@ def teammate_interaction_analysis(plays, player_name, player_teams):
     return dict(interaction_data)
 
 def get_player_averages(player_name):
-    try:
-        connection = mysql.connector.connect(**DB_CONFIG)
-        if connection.is_connected():
-            cursor = connection.cursor(dictionary=True)
-            query = """
-                SELECT pts, ast, reb, turnovers, pf
-                FROM player_stats
-                WHERE LOWER(name) = LOWER(%s)
-            """
-            cursor.execute(query, (player_name,))
-            result = cursor.fetchone()
-            return result if result else None
-    except mysql.connector.Error as e:
-        print(f"Error fetching player averages: {e}", file=sys.stderr)
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
-    return None
+    player_doc = db.collection("players").document(player_name).get()
+    return player_doc.to_dict() if player_doc.exists else None
+
 
 def get_game_stats(game_id, player_name):
-    try:
-        connection = mysql.connector.connect(**DB_CONFIG)
-        if connection.is_connected():
-            cursor = connection.cursor(dictionary=True)
-            query = """
-                SELECT pts, ast, reb, fg_a, fg_m, three_pt_a, three_pt_m, ft_a, ft_m, turnovers, pf
-                FROM game_stats
-                WHERE game_id = %s AND LOWER(player_name) = LOWER(%s)
-            """
-            cursor.execute(query, (game_id, player_name))
-            result = cursor.fetchone()
-            return result if result else None
-    except mysql.connector.Error as e:
-        print(f"Error fetching game stats: {e}", file=sys.stderr)
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
-    return None
+    game_stats_ref = db.collection("players").document(player_name).collection("games").document(game_id).get()
+    return game_stats_ref.to_dict() if game_stats_ref.exists else None
+
 
 def get_opposing_team_stats(game_id, player_team):
-    try:
-        connection = mysql.connector.connect(**DB_CONFIG)
-        if connection.is_connected():
-            cursor = connection.cursor(dictionary=True)
-            query = """
-                SELECT 
-                    CASE 
-                        WHEN home_team = %s THEN away_team
-                        WHEN away_team = %s THEN home_team
-                    END AS opposing_team
-                FROM games
-                WHERE game_id = %s
-            """
-            cursor.execute(query, (player_team, player_team, game_id))
-            result = cursor.fetchone()
-            if result and result["opposing_team"]:
-                opposing_team = result["opposing_team"]
-                query = """
-                    SELECT pts, ast, reb, offensive_rebounds, defensive_rebounds, turnovers, pf
-                    FROM team_stats
-                    WHERE team = %s
-                """
-                cursor.execute(query, (opposing_team,))
-                team_stats = cursor.fetchone()
-                if team_stats:
-                    team_stats["opposing_team"] = opposing_team
-                    return team_stats
-    except mysql.connector.Error as e:
-        print(f"Error fetching opposing team stats: {e}", file=sys.stderr)
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
+    game_doc = db.collection("games").document(game_id).get()
+    if game_doc.exists:
+        game_data = game_doc.to_dict()
+        opposing_team = game_data["away_team"] if game_data["home_team"] == player_team else game_data["home_team"]
+        opposing_team_stats = db.collection("teams").document(opposing_team).get()
+        return opposing_team_stats.to_dict() if opposing_team_stats.exists else None
     return None
+
 
 async def analyze_game_flow(session, player_name, game_id, max_retries=3):
     headers = {
@@ -739,7 +640,7 @@ def calculate_shooting_probabilities(player_name):
     return None
 
 async def main():
-    with open("/Users/ajoyner/Desktop/unrivaled_ai_sportsbet/data/unrivaled/unr_enriched_players.json", "r") as f:
+    with open("/Users/ajoyner/unrivaled_ai_sportsbet/data/unrivaled/unr_enriched_players.json", "r") as f:
         enriched_data = json.load(f)
     player_teams = get_player_teams()
     semaphore = asyncio.Semaphore(4)  # Increased concurrency

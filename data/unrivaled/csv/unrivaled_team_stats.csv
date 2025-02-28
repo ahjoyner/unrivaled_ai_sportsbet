@@ -1,7 +1,7 @@
-team,logo_url,gp,pts,offensive_rebounds,defensive_rebounds,reb,ast,stl,blk,turnovers,pf,papg,wins,losses,win_pct,games_behind,streak
-Lunar Owls,https://www.unrivaled.basketball/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Flunar-owls-x1300.b5161e84.png&w=256&q=75,9,79.3,5.8,24.6,30.3,15.2,5.2,2.4,6.2,15.1,70.6,8,1,88.9,0.0,L1
-Rose,https://www.unrivaled.basketball/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Frose-x1300.dd8c4dc4.png&w=256&q=75,9,68.8,10.6,26.4,37.0,11.8,3.3,1.1,9.1,15.7,68.7,5,4,55.6,3.0,W4
-Mist,https://www.unrivaled.basketball/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fmist-x1300.65f164fc.png&w=256&q=75,9,67.6,6.4,27.1,33.6,11.3,3.9,2.4,8.9,13.0,72.0,2,7,22.2,6.0,L3
-Phantom,https://www.unrivaled.basketball/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fphantom-x1300.6ef770ed.png&w=256&q=75,8,66.1,4.1,25.4,29.5,14.6,2.3,1.9,9.1,11.8,76.8,2,6,25.0,5.5,L3
-Laces,https://www.unrivaled.basketball/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Flaces-x1300.11b9ea32.png&w=256&q=75,8,64.4,4.8,24.0,28.8,10.3,4.1,0.9,6.4,10.9,64.4,5,3,62.5,2.5,W1
-Vinyl,https://www.unrivaled.basketball/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fvinyl-x1300.9e37de9d.png&w=256&q=75,9,63.6,6.6,21.1,27.7,11.0,4.7,2.1,6.3,11.3,72.5,4,5,44.4,4.0,W1
+team,logo_url,gp,pts_x,offensive_rebounds,defensive_rebounds,reb,ast,stl,blk,turnovers,pf,wins,losses,win_pct,games_behind,pts_y,pa,streak
+Lunar Owls,https://www.unrivaled.basketball/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Flunar-owls-x1300.b5161e84.png&w=256&q=75,10,80.2,6.0,24.5,30.5,15.4,5.5,2.3,6.1,15.3,9,1,90.0,0.0,802,695,W1
+Vinyl,https://www.unrivaled.basketball/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fvinyl-x1300.9e37de9d.png&w=256&q=75,10,71.6,7.7,23.2,30.9,12.2,5.3,2.1,6.9,13.0,4,6,40.0,5.0,644,659,L1
+Laces,https://www.unrivaled.basketball/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Flaces-x1300.11b9ea32.png&w=256&q=75,10,69.3,5.2,26.2,31.4,11.0,4.1,1.0,7.8,12.1,5,5,50.0,4.0,624,615,L2
+Rose,https://www.unrivaled.basketball/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Frose-x1300.dd8c4dc4.png&w=256&q=75,10,69.0,10.8,26.7,37.5,12.5,3.1,1.0,8.7,15.1,6,4,60.0,3.0,690,677,W5
+Mist,https://www.unrivaled.basketball/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fmist-x1300.65f164fc.png&w=256&q=75,10,67.3,6.6,27.9,34.5,11.6,3.8,2.5,8.9,12.3,3,7,30.0,6.0,673,697,W1
+Phantom,https://www.unrivaled.basketball/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fphantom-x1300.6ef770ed.png&w=256&q=75,10,66.7,5.2,25.1,30.3,14.4,2.3,2.5,8.5,11.7,3,7,30.0,6.0,667,757,L1

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -12,9 +13,10 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { db } from "./firebase"; // Import Firestore instance
+import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 
 const cleanReasonText = (text) => {
-  // Remove the **...:** prefix if it exists
   return text.replace(/^\*\*.*:\*\*\s*/, "").replace(/^\*\*.*\*\*:\s*/, "");
 };
 
@@ -52,22 +54,24 @@ export default function Home() {
     annotationPlugin
   );
 
-  // Fetch players immediately.
+  // Fetch players from Firestore
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
-        const response = await fetch("/api/getPlayers");
-        if (!response.ok) throw new Error("Failed to fetch players");
-        const data = await response.json();
-        console.log("Fetched player data:", data);
-        const playerProjections = data.map((player) => ({
-          player: player["Player Data"].name || "Unknown Player",
-          team: player["Player Data"].team || "Unknown Team",
-          position: player["Player Data"].position || "N/A",
-          opponent: player["Projection Data"].description || "Unknown Opponent",
-          prop_line: player["Projection Data"].line_score || 0,
-          headshot_url: player.headshot_url || null,
-        }));
+        const playersCollection = collection(db, "players");
+        const playersSnapshot = await getDocs(playersCollection);
+        const playerProjections = playersSnapshot.docs.map((doc) => {
+          const playerData = doc.data();
+          return {
+            id: doc.id,
+            player: playerData.name || "Unknown Player",
+            team: playerData.team || "Unknown Team",
+            position: playerData.position || "N/A",
+            opponent: playerData.opponent || "Unknown Opponent",
+            prop_line: playerData.prop_line || 0,
+            headshot_url: playerData.headshot_url || null,
+          };
+        });
         setPlayers(playerProjections);
         setFilteredPlayers(playerProjections);
       } catch (error) {
@@ -80,66 +84,61 @@ export default function Home() {
     fetchPlayers();
   }, []);
 
-  // Poll the database endpoint for each player's analysis result.
+  // Poll Firestore for each player's analysis result
   useEffect(() => {
     if (players.length === 0) return;
-  
+
     const interval = setInterval(async () => {
       let updatedResults = {};
       for (const player of players) {
         try {
-          const response = await fetch(
-            `/api/analysis/status?playerName=${encodeURIComponent(player.player)}`
-          );
-          if (response.ok) {
-            const data = await response.json();
-            if (data.result) {
-              updatedResults[player.player] = data.result;
-            }
+          const analysisDoc = doc(db, "analysis_results", player.id);
+          const analysisSnapshot = await getDoc(analysisDoc);
+          if (analysisSnapshot.exists()) {
+            updatedResults[player.id] = analysisSnapshot.data();
           }
         } catch (err) {
           console.error(`Error fetching analysis for ${player.player}:`, err);
         }
       }
-      console.log("Polled DB analysis results:", updatedResults);
+      console.log("Polled Firestore analysis results:", updatedResults);
       setConfidenceData((prev) => ({ ...prev, ...updatedResults }));
-    }, 5000); // Poll every 5 seconds
-  
-    return () => clearInterval(interval); // Cleanup interval on component unmount
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, [players]);
 
-  // Poll the endpoint for a player's last 5 games when requested.
+  // Fetch last 5 games from Firestore
   const openLast5GamesModal = async (player) => {
     try {
-      const normalizedPlayerName = player.player.replace(/-/g, " ");
+      const gamesCollection = collection(db, "games");
+      const gamesSnapshot = await getDocs(gamesCollection);
+      const gamesData = gamesSnapshot.docs
+        .map((doc) => doc.data())
+        .filter((game) => game.player_name === player.player)
+        .slice(-5); // Get last 5 games
 
-      const response = await fetch(
-        `/api/last5games?playerName=${encodeURIComponent(normalizedPlayerName)}`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch last 5 games");
-      }
-      const data = await response.json();
-      console.log("Fetched last 5 games for", player.player, data.result);
-      setLast5GamesModal({ ...player, last_5_games: data.result });
+      console.log("Fetched last 5 games for", player.player, gamesData);
+      setLast5GamesModal({ ...player, last_5_games: gamesData });
     } catch (error) {
       console.error("Error fetching last 5 games:", error);
     }
   };
 
-  // Fetch game stats when a bar is clicked.
+  // Fetch game stats from Firestore
   const fetchGameStats = async (gameId, playerName) => {
     try {
-      const response = await fetch(`/api/gameStats?gameId=${gameId}&playerName=${encodeURIComponent(playerName)}`);
-      if (!response.ok) throw new Error("Failed to fetch game stats");
-      const data = await response.json();
-      setGameStatsModal(data); // Set the game stats modal data
+      const gameDoc = doc(db, "games", gameId);
+      const gameSnapshot = await getDoc(gameDoc);
+      if (gameSnapshot.exists()) {
+        setGameStatsModal(gameSnapshot.data());
+      }
     } catch (error) {
       console.error("Error fetching game stats:", error);
     }
   };
 
-  // Filter players based on search query.
+  // Filter players based on search query
   useEffect(() => {
     const filtered = players.filter((player) =>
       player.player.toLowerCase().includes(searchQuery.toLowerCase())
@@ -147,12 +146,12 @@ export default function Home() {
     setFilteredPlayers(filtered);
   }, [searchQuery, players]);
 
-  // Reset reasonIndex whenever the selected player changes.
+  // Reset reasonIndex whenever the selected player changes
   useEffect(() => {
     setReasonIndex(1);
   }, [selectedPlayer]);
 
-  // Functions for cycling through reason sections.
+  // Functions for cycling through reason sections
   const handleNextReason = () => {
     setReasonIndex((prev) => (prev < 5 ? prev + 1 : 1));
   };
@@ -182,7 +181,7 @@ export default function Home() {
       <header className="fixed top-0 left-0 w-full bg-gray-800 py-4 shadow-lg z-50">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <h1 className="text-3xl font-bold text-white flex items-center">
-            <img src="/logo.png" alt="MODUEL Logo" className="h-10 mr-2" />
+            <img src="/logo.jpg" alt="MODUEL Logo" className="h-10 mr-2" />
             MODUEL Prop Confidence
           </h1>
           <input
@@ -197,13 +196,12 @@ export default function Home() {
       <div className="container mx-auto p-8 pt-24 relative z-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredPlayers.map((player, index) => {
-            const analysis = confidenceData[player.player] || {};
+            const analysis = confidenceData[player.id] || {};
             const confidence = analysis.confidence_level || 0;
             const reasonPreview = analysis.final_conclusion || "No reason available.";
             const confidenceColor = confidence >= 70 ? "bg-gradient-to-r from-green-400 to-blue-500" : "bg-gradient-to-r from-red-400 to-pink-500";
             return (
               <div key={index} className="bg-gray-800 rounded-lg p-6 text-center shadow-lg relative hover:shadow-xl transition-shadow">
-                {/* Last 5 Games Button */}
                 <button
                   className="absolute top-2 right-2 bg-gray-700 text-white px-2 py-1 rounded-lg hover:bg-gray-600 transition-colors"
                   onClick={() => openLast5GamesModal(player)}
@@ -285,7 +283,7 @@ export default function Home() {
                 <div className="flex flex-col items-center">
                   <span className="text-orange-400 text-lg font-semibold">Confidence</span>
                   <span className="text-white text-2xl font-bold">
-                    {confidenceData[selectedPlayer.player]?.confidence_level || 0}
+                    {confidenceData[selectedPlayer.id]?.confidence_level || 0}
                   </span>
                 </div>
                 <div className="flex flex-col items-center">

@@ -47,7 +47,7 @@ def main():
                 })
 
     # Write enriched data to unr_enriched_players.json
-    with open("/Users/ajoyner/Desktop/unrivaled_ai_sportsbet/data/unrivaled/unr_enriched_players.json", "w") as f:
+    with open("/Users/ajoyner/unrivaled_ai_sportsbet/data/unrivaled/unr_enriched_players.json", "w") as f:
         json.dump(enriched_players, f, indent=4)
 
     print("Enriched players data saved to unr_enriched_players.json.")

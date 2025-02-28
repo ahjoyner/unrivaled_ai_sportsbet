@@ -8,7 +8,7 @@ export async function GET() {
   try {
     // Trigger the background analysis task.
     const { stdout, stderr } = await execAsync(
-      `python3 -c "import sys; sys.path.append('/Users/ajoyner/Desktop/unrivaled_ai_sportsbet/data/unrivaled/predict'); from play_by_play_analysis_gpt import run_analysis_task; run_analysis_task.delay()"`
+      `python3 -c "import sys; sys.path.append('/Users/ajoyner/unrivaled_ai_sportsbet/data/unrivaled/predict'); from play_by_play_analysis_gpt import run_analysis_task; run_analysis_task.delay()"`
     );
     if (stderr) {
       console.error(`Error: ${stderr}`);
