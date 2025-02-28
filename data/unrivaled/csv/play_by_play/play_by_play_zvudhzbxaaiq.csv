@@ -1,5 +1,4 @@
 game_id,game_date,quarter,time,play_description,home_score,away_score,team,player
-zvudhzbxaaiq,2025-02-01,Q1,,Timeout,0,0,,
 zvudhzbxaaiq,2025-02-01,Q1,7:00,Jumpball (Rose gains possesion),0,0,Rose,
 zvudhzbxaaiq,2025-02-01,Q1,6:46,Kahleah Copper misses two point shot,0,0,Rose,Kahleah Copper
 zvudhzbxaaiq,2025-02-01,Q1,6:46,Laces defensive team rebound,0,0,Laces,
@@ -8,16 +7,16 @@ zvudhzbxaaiq,2025-02-01,Q1,6:24,Tiffany Hayes misses two point shot,0,0,Laces,Ti
 zvudhzbxaaiq,2025-02-01,Q1,6:24,Angel Reese defensive rebound,0,0,Rose,Angel Reese
 zvudhzbxaaiq,2025-02-01,Q1,6:19,Angel Reese misses two point shot,0,0,Rose,Angel Reese
 zvudhzbxaaiq,2025-02-01,Q1,6:19,Stefanie Dolson defensive rebound,0,0,Laces,Stefanie Dolson
-zvudhzbxaaiq,2025-02-01,Q1,6:09,Kayla McBride assist,0,0,Laces,Kayla McBride
 zvudhzbxaaiq,2025-02-01,Q1,6:09,Stefanie Dolson makes two point shot,2,0,Laces,Stefanie Dolson
+zvudhzbxaaiq,2025-02-01,Q1,6:09,Kayla McBride assist,2,0,Laces,Kayla McBride
 zvudhzbxaaiq,2025-02-01,Q1,5:54,Chelsea Gray makes two point shot,2,2,Rose,Chelsea Gray
 zvudhzbxaaiq,2025-02-01,Q1,5:35,Stefanie Dolson misses three point shot,2,2,Laces,Stefanie Dolson
 zvudhzbxaaiq,2025-02-01,Q1,5:35,Kahleah Copper defensive rebound,2,2,Rose,Kahleah Copper
 zvudhzbxaaiq,2025-02-01,Q1,5:27,Kahleah Copper  bad pass turnover,2,2,Rose,Kahleah Copper
 zvudhzbxaaiq,2025-02-01,Q1,5:10,Tiffany Hayes misses two point shot,2,2,Laces,Tiffany Hayes
 zvudhzbxaaiq,2025-02-01,Q1,5:09,Angel Reese defensive rebound,2,2,Rose,Angel Reese
-zvudhzbxaaiq,2025-02-01,Q1,5:02,Chelsea Gray assist,2,2,Rose,Chelsea Gray
 zvudhzbxaaiq,2025-02-01,Q1,5:02,Chelsea Gray makes two point shot,2,4,Rose,Chelsea Gray
+zvudhzbxaaiq,2025-02-01,Q1,5:02,Chelsea Gray assist,2,4,Rose,Chelsea Gray
 zvudhzbxaaiq,2025-02-01,Q1,4:50,Stefanie Dolson misses two point shot,2,4,Laces,Stefanie Dolson
 zvudhzbxaaiq,2025-02-01,Q1,4:50,Angel Reese defensive rebound,2,4,Rose,Angel Reese
 zvudhzbxaaiq,2025-02-01,Q1,4:40,Chelsea Gray misses two point shot,2,4,Rose,Chelsea Gray
@@ -26,8 +25,8 @@ zvudhzbxaaiq,2025-02-01,Q1,4:32,Tiffany Hayes misses three point shot,2,4,Laces,
 zvudhzbxaaiq,2025-02-01,Q1,4:31,Angel Reese defensive rebound,2,4,Rose,Angel Reese
 zvudhzbxaaiq,2025-02-01,Q1,4:25,Angel Reese misses two point shot,2,4,Rose,Angel Reese
 zvudhzbxaaiq,2025-02-01,Q1,4:25,Stefanie Dolson defensive rebound,2,4,Laces,Stefanie Dolson
+zvudhzbxaaiq,2025-02-01,Q1,4:18,Tiffany Hayes assist,2,4,Laces,Tiffany Hayes
 zvudhzbxaaiq,2025-02-01,Q1,4:18,Stefanie Dolson makes two point shot,4,4,Laces,Stefanie Dolson
-zvudhzbxaaiq,2025-02-01,Q1,4:18,Tiffany Hayes assist,4,4,Laces,Tiffany Hayes
 zvudhzbxaaiq,2025-02-01,Q1,3:56,Kahleah Copper misses three point shot,4,4,Rose,Kahleah Copper
 zvudhzbxaaiq,2025-02-01,Q1,3:55,Tiffany Hayes defensive rebound,4,4,Laces,Tiffany Hayes
 zvudhzbxaaiq,2025-02-01,Q1,3:48,Angel Reese personal foul,4,4,Rose,Angel Reese
@@ -46,10 +45,10 @@ zvudhzbxaaiq,2025-02-01,Q1,2:41,Chelsea Gray assist,6,6,Rose,Chelsea Gray
 zvudhzbxaaiq,2025-02-01,Q1,2:41,Azurá Stevens makes two point shot,6,8,Rose,
 zvudhzbxaaiq,2025-02-01,Q1,2:30,Jackie Young misses three point shot,6,8,Laces,Jackie Young
 zvudhzbxaaiq,2025-02-01,Q1,2:30,Azurá Stevens defensive rebound,6,8,Rose,
-zvudhzbxaaiq,2025-02-01,Q1,2:15,Chelsea Gray assist,6,8,Rose,Chelsea Gray
 zvudhzbxaaiq,2025-02-01,Q1,2:15,Azurá Stevens makes two point shot,6,10,Rose,
+zvudhzbxaaiq,2025-02-01,Q1,2:15,Chelsea Gray assist,6,10,Rose,Chelsea Gray
+zvudhzbxaaiq,2025-02-01,Q1,2:04,Jackie Young assist,6,10,Laces,Jackie Young
 zvudhzbxaaiq,2025-02-01,Q1,2:04,Kayla McBride makes two point shot,8,10,Laces,Kayla McBride
-zvudhzbxaaiq,2025-02-01,Q1,2:04,Jackie Young assist,8,10,Laces,Jackie Young
 zvudhzbxaaiq,2025-02-01,Q1,1:56,Kayla McBride personal foul,8,10,Laces,Kayla McBride
 zvudhzbxaaiq,2025-02-01,Q1,1:51,Kahleah Copper  lost ball turnover,8,10,Rose,Kahleah Copper  lost ball
 zvudhzbxaaiq,2025-02-01,Q1,1:51,Kahleah Copper personal foul,8,10,Rose,Kahleah Copper
@@ -62,8 +61,8 @@ zvudhzbxaaiq,2025-02-01,Q1,1:14,Kayla McBride makes free throw (1pt.),11,10,Lace
 zvudhzbxaaiq,2025-02-01,Q1,1:03,Chelsea Gray makes two point shot,11,12,Rose,Chelsea Gray
 zvudhzbxaaiq,2025-02-01,Q1,0:47.2,Tiffany Hayes makes two point shot,13,12,Laces,Tiffany Hayes
 zvudhzbxaaiq,2025-02-01,Q1,0:37.6,Chelsea Gray misses three point shot,13,12,Rose,Chelsea Gray
-zvudhzbxaaiq,2025-02-01,Q1,0:36.4,Laces defensive team rebound,13,12,Laces,
 zvudhzbxaaiq,2025-02-01,Q1,0:36.4,Azurá Stevens personal foul,13,12,Rose,
+zvudhzbxaaiq,2025-02-01,Q1,0:36.4,Laces defensive team rebound,13,12,Laces,
 zvudhzbxaaiq,2025-02-01,Q1,0:36.4,Kate Martin makes free throw (2pt.),15,12,Laces,Kate Martin
 zvudhzbxaaiq,2025-02-01,Q1,0:26.0,Chelsea Gray  bad pass turnover,15,12,Rose,Chelsea Gray
 zvudhzbxaaiq,2025-02-01,Q1,0:20.0,Kate Martin makes two point shot,17,12,Laces,Kate Martin
@@ -74,11 +73,11 @@ zvudhzbxaaiq,2025-02-01,Q1,0.0,Rose defensive team rebound,17,14,Rose,
 zvudhzbxaaiq,2025-02-01,Q1,0.0,End of the 1st Quarter,17,14,,
 zvudhzbxaaiq,2025-02-01,Q2,6:48,Tiffany Hayes makes two point shot,19,14,Laces,Tiffany Hayes
 zvudhzbxaaiq,2025-02-01,Q2,6:48,Stefanie Dolson assist,19,14,Laces,Stefanie Dolson
-zvudhzbxaaiq,2025-02-01,Q2,6:36,Lexie Hull assist,19,14,Rose,Lexie Hull
 zvudhzbxaaiq,2025-02-01,Q2,6:36,Azurá Stevens makes two point shot,19,16,Rose,
+zvudhzbxaaiq,2025-02-01,Q2,6:36,Lexie Hull assist,19,16,Rose,Lexie Hull
 zvudhzbxaaiq,2025-02-01,Q2,6:13,Stefanie Dolson  travel turnover,19,16,Laces,Stefanie Dolson  travel
+zvudhzbxaaiq,2025-02-01,Q2,6:05,Angel Reese assist,19,16,Rose,Angel Reese
 zvudhzbxaaiq,2025-02-01,Q2,6:05,Lexie Hull makes two point shot,19,18,Rose,Lexie Hull
-zvudhzbxaaiq,2025-02-01,Q2,6:05,Angel Reese assist,19,18,Rose,Angel Reese
 zvudhzbxaaiq,2025-02-01,Q2,5:44,Tiffany Hayes misses two point shot,19,18,Laces,Tiffany Hayes
 zvudhzbxaaiq,2025-02-01,Q2,5:44,Angel Reese defensive rebound,19,18,Rose,Angel Reese
 zvudhzbxaaiq,2025-02-01,Q2,5:37,Lexie Hull misses three point shot,19,18,Rose,Lexie Hull
@@ -126,8 +125,8 @@ zvudhzbxaaiq,2025-02-01,Q2,2:31,Lexie Hull misses two point shot,23,28,Rose,Lexi
 zvudhzbxaaiq,2025-02-01,Q2,2:30,Kate Martin defensive rebound,23,28,Laces,Kate Martin
 zvudhzbxaaiq,2025-02-01,Q2,2:23,Kate Martin misses two point shot,23,28,Laces,Kate Martin
 zvudhzbxaaiq,2025-02-01,Q2,2:23,Angel Reese defensive rebound,23,28,Rose,Angel Reese
+zvudhzbxaaiq,2025-02-01,Q2,2:18,Angel Reese assist,23,28,Rose,Angel Reese
 zvudhzbxaaiq,2025-02-01,Q2,2:18,Kahleah Copper makes two point shot,23,30,Rose,Kahleah Copper
-zvudhzbxaaiq,2025-02-01,Q2,2:18,Angel Reese assist,23,30,Rose,Angel Reese
 zvudhzbxaaiq,2025-02-01,Q2,2:11,Kahleah Copper personal foul,23,30,Rose,Kahleah Copper
 zvudhzbxaaiq,2025-02-01,Q2,2:04,Tiffany Hayes misses two point shot,23,30,Laces,Tiffany Hayes
 zvudhzbxaaiq,2025-02-01,Q2,2:04,Kahleah Copper defensive rebound,23,30,Rose,Kahleah Copper
@@ -152,8 +151,8 @@ zvudhzbxaaiq,2025-02-01,Q2,0:32.7,Chelsea Gray misses two point shot,30,35,Rose,
 zvudhzbxaaiq,2025-02-01,Q2,0:32.3,Azurá Stevens offensive rebound,30,35,Rose,
 zvudhzbxaaiq,2025-02-01,Q2,0:30.8,Azurá Stevens makes two point shot,30,37,Rose,
 zvudhzbxaaiq,2025-02-01,Q2,0:24.9,Jackie Young makes three point shot,33,37,Laces,Jackie Young
-zvudhzbxaaiq,2025-02-01,Q2,0:17.0,Chelsea Gray assist,33,37,Rose,Chelsea Gray
 zvudhzbxaaiq,2025-02-01,Q2,0:17.0,Kahleah Copper makes three point shot,33,40,Rose,Kahleah Copper
+zvudhzbxaaiq,2025-02-01,Q2,0:17.0,Chelsea Gray assist,33,40,Rose,Chelsea Gray
 zvudhzbxaaiq,2025-02-01,Q2,0:12.4,Tiffany Hayes makes two point shot,35,40,Laces,Tiffany Hayes
 zvudhzbxaaiq,2025-02-01,Q2,0.0,Kayla McBride personal foul,35,40,Laces,Kayla McBride
 zvudhzbxaaiq,2025-02-01,Q2,.8,Chelsea Gray makes free throw (2pt.),35,42,Rose,Chelsea Gray
@@ -170,8 +169,8 @@ zvudhzbxaaiq,2025-02-01,Q3,6:02,Azurá Stevens offensive rebound,37,44,Rose,
 zvudhzbxaaiq,2025-02-01,Q3,6:01,Azurá Stevens makes two point shot,37,46,Rose,
 zvudhzbxaaiq,2025-02-01,Q3,5:50,Kate Martin misses two point shot,37,46,Laces,Kate Martin
 zvudhzbxaaiq,2025-02-01,Q3,5:49,Azurá Stevens defensive rebound,37,46,Rose,
-zvudhzbxaaiq,2025-02-01,Q3,5:39,Azurá Stevens assist,37,46,Rose,
 zvudhzbxaaiq,2025-02-01,Q3,5:39,Kahleah Copper makes two point shot,37,48,Rose,Kahleah Copper
+zvudhzbxaaiq,2025-02-01,Q3,5:39,Azurá Stevens assist,37,48,Rose,
 zvudhzbxaaiq,2025-02-01,Q3,5:30,Jackie Young makes three point shot,40,48,Laces,Jackie Young
 zvudhzbxaaiq,2025-02-01,Q3,5:21,Kahleah Copper misses two point shot,40,48,Rose,Kahleah Copper
 zvudhzbxaaiq,2025-02-01,Q3,5:21,Kahleah Copper offensive rebound,40,48,Rose,Kahleah Copper
@@ -191,8 +190,8 @@ zvudhzbxaaiq,2025-02-01,Q3,4:15,Azurá Stevens misses three point shot,42,52,Ros
 zvudhzbxaaiq,2025-02-01,Q3,4:15,Stefanie Dolson defensive rebound,42,52,Laces,Stefanie Dolson
 zvudhzbxaaiq,2025-02-01,Q3,4:08,Kate Martin misses three point shot,42,52,Laces,Kate Martin
 zvudhzbxaaiq,2025-02-01,Q3,4:07,Azurá Stevens defensive rebound,42,52,Rose,
+zvudhzbxaaiq,2025-02-01,Q3,3:53,Chelsea Gray assist,42,52,Rose,Chelsea Gray
 zvudhzbxaaiq,2025-02-01,Q3,3:53,Azurá Stevens makes two point shot,42,54,Rose,
-zvudhzbxaaiq,2025-02-01,Q3,3:53,Chelsea Gray assist,42,54,Rose,Chelsea Gray
 zvudhzbxaaiq,2025-02-01,Q3,3:39,Stefanie Dolson makes three point shot,45,54,Laces,Stefanie Dolson
 zvudhzbxaaiq,2025-02-01,Q3,3:39,Kayla McBride assist,45,54,Laces,Kayla McBride
 zvudhzbxaaiq,2025-02-01,Q3,3:25,Chelsea Gray misses two point shot,45,54,Rose,Chelsea Gray
@@ -224,8 +223,8 @@ zvudhzbxaaiq,2025-02-01,Q3,1:07,Kayla McBride misses three point shot,55,62,Lace
 zvudhzbxaaiq,2025-02-01,Q3,1:07,Rose defensive team rebound,55,62,Rose,
 zvudhzbxaaiq,2025-02-01,Q3,0:59.0,Chelsea Gray makes two point shot,55,64,Rose,Chelsea Gray
 zvudhzbxaaiq,2025-02-01,Q3,0:49.3,Kate Martin makes two point shot,57,64,Laces,Kate Martin
+zvudhzbxaaiq,2025-02-01,Q3,0:38.2,Chelsea Gray assist,57,64,Rose,Chelsea Gray
 zvudhzbxaaiq,2025-02-01,Q3,0:38.2,Kahleah Copper makes two point shot,57,66,Rose,Kahleah Copper
-zvudhzbxaaiq,2025-02-01,Q3,0:38.2,Chelsea Gray assist,57,66,Rose,Chelsea Gray
 zvudhzbxaaiq,2025-02-01,Q3,0:28.5,Kayla McBride makes two point shot,59,66,Laces,Kayla McBride
 zvudhzbxaaiq,2025-02-01,Q3,0:24.2,Chelsea Gray assist,59,66,Rose,Chelsea Gray
 zvudhzbxaaiq,2025-02-01,Q3,0:24.2,Kahleah Copper makes two point shot,59,68,Rose,Kahleah Copper
@@ -264,9 +263,9 @@ zvudhzbxaaiq,2025-02-01,Q4,,Jackie Young misses three point shot,69,78,Laces,Jac
 zvudhzbxaaiq,2025-02-01,Q4,,Kahleah Copper defensive rebound,69,78,Rose,Kahleah Copper
 zvudhzbxaaiq,2025-02-01,Q4,,Azurá Stevens misses three point shot,69,78,Rose,
 zvudhzbxaaiq,2025-02-01,Q4,,Azurá Stevens offensive rebound,69,78,Rose,
-zvudhzbxaaiq,2025-02-01,Q4,,Azurá Stevens assist,69,78,Rose,
-zvudhzbxaaiq,2025-02-01,Q4,,Stefanie Dolson personal foul,69,78,Laces,Stefanie Dolson
 zvudhzbxaaiq,2025-02-01,Q4,,Kahleah Copper makes two point shot,69,80,Rose,Kahleah Copper
+zvudhzbxaaiq,2025-02-01,Q4,,Azurá Stevens assist,69,80,Rose,
+zvudhzbxaaiq,2025-02-01,Q4,,Stefanie Dolson personal foul,69,80,Laces,Stefanie Dolson
 zvudhzbxaaiq,2025-02-01,Q4,,Kahleah Copper misses free throw (2pt.),69,80,Rose,Kahleah Copper
 zvudhzbxaaiq,2025-02-01,Q4,,Stefanie Dolson defensive rebound,69,80,Laces,Stefanie Dolson
 zvudhzbxaaiq,2025-02-01,Q4,,Kayla McBride misses three point shot,69,80,Laces,Kayla McBride

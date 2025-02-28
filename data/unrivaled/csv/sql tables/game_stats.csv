@@ -1,0 +1,265 @@
+game_id,player_name,team,opponent,min,reb,offensive_rebounds,defensive_rebounds,ast,stl,blk,turnovers,pf,pts,game_date,fg_m,fg_a,three_pt_m,three_pt_a,ft_m,ft_a
+3bofd398uen2,"Alyssa Thomas",Laces,Rose,0,0,0,0,0,0,0,0,0,0,2025-01-27,0,0,0,0,0,0
+3bofd398uen2,"Angel Reese",Rose,Laces,15,7,3,4,2,2,0,4,6,14,2025-01-27,2,4,0,1,5,6
+3bofd398uen2,"Azura Stevens",Rose,Laces,6,6,0,6,0,0,0,0,2,5,2025-01-27,2,10,1,6,0,0
+3bofd398uen2,"Brittney Sykes",Rose,Laces,12,6,3,3,1,1,0,1,2,16,2025-01-27,5,11,2,6,2,3
+3bofd398uen2,"Chelsea Gray",Rose,Laces,15,7,0,7,5,2,0,1,3,7,2025-01-27,2,13,1,5,1,1
+3bofd398uen2,"Jackie Young",Laces,Rose,0,0,0,0,0,0,0,0,0,0,2025-01-27,0,0,0,0,0,0
+3bofd398uen2,"Kahleah Copper",Rose,Laces,14,6,1,5,0,0,0,1,5,8,2025-01-27,3,12,0,3,1,1
+3bofd398uen2,"Kate Martin",Laces,Rose,16,6,2,4,0,0,0,2,4,5,2025-01-27,2,7,1,5,0,1
+3bofd398uen2,"Kayla Mcbride",Laces,Rose,20,9,0,9,3,0,0,1,1,31,2025-01-27,8,18,4,10,5,5
+3bofd398uen2,"Lexie Hull",Rose,Laces,10,0,0,0,2,0,0,1,3,5,2025-01-27,1,7,1,5,1,1
+3bofd398uen2,"Natisha Hiedeman",Laces,Rose,2,0,0,0,0,0,0,1,1,0,2025-01-27,0,1,0,0,0,0
+3bofd398uen2,"Stefanie Dolson",Laces,Rose,15,6,2,4,4,0,2,2,6,9,2025-01-27,2,2,1,1,2,2
+3bofd398uen2,"Tiffany Hayes",Laces,Rose,19,11,2,9,3,1,0,5,5,24,2025-01-27,8,24,1,8,4,6
+6vgjcmphd6wm,"Aaliyah Edwards",Mist,Phantom,7,3,1,2,0,0,0,2,2,8,2025-01-24,3,3,0,0,1,2
+6vgjcmphd6wm,"Breanna Stewart",Mist,Phantom,18,11,1,10,3,2,0,1,0,27,2025-01-24,8,17,2,7,5,6
+6vgjcmphd6wm,"Brittney Griner",Phantom,Mist,15,9,1,8,1,1,0,0,0,29,2025-01-24,14,18,0,0,1,1
+6vgjcmphd6wm,"Courtney Vandersloot",Mist,Phantom,13,7,4,3,4,0,0,2,1,8,2025-01-24,3,12,0,5,1,1
+6vgjcmphd6wm,"Dijonai Carrington",Mist,Phantom,0,0,0,0,0,0,0,0,0,0,2025-01-24,0,0,0,0,0,0
+6vgjcmphd6wm,"Jewell Loyd",Mist,Phantom,0,0,0,0,0,0,0,0,0,0,2025-01-24,0,0,0,0,0,0
+6vgjcmphd6wm,"Katie Lou Samuelson",Phantom,Mist,14,3,1,2,4,1,0,0,3,6,2025-01-24,3,7,0,2,0,0
+6vgjcmphd6wm,"Marina Mabrey",Phantom,Mist,0,0,0,0,0,0,0,0,0,0,2025-01-24,0,0,0,0,0,0
+6vgjcmphd6wm,"Nalyssa Smith",Mist,Phantom,5,0,0,0,1,0,0,1,3,2,2025-01-24,1,2,0,0,0,0
+6vgjcmphd6wm,"Natasha Cloud",Phantom,Mist,15,7,0,7,9,0,0,3,0,6,2025-01-24,3,12,0,4,0,0
+6vgjcmphd6wm,"Natisha Hiedeman",Phantom,Mist,6,2,1,1,3,0,0,0,1,4,2025-01-24,1,3,0,2,1,1
+6vgjcmphd6wm,"Rickea Jackson",Mist,Phantom,18,4,1,3,1,1,0,1,3,24,2025-01-24,10,21,2,6,1,1
+6vgjcmphd6wm,"Sabrina Ionescu",Phantom,Mist,0,0,0,0,0,0,0,0,0,0,2025-01-24,0,0,0,0,0,0
+6vgjcmphd6wm,"Satou Sabally",Phantom,Mist,12,3,1,2,1,0,0,5,6,29,2025-01-24,10,17,5,6,2,2
+9t71p5ri5690,"Aaliyah Edwards",Mist,Laces,4,3,1,2,1,1,1,0,1,0,2025-01-20,0,1,0,0,0,1
+9t71p5ri5690,"Alyssa Thomas",Laces,Mist,13,15,2,13,4,1,1,2,3,12,2025-01-20,6,13,0,0,0,0
+9t71p5ri5690,"Breanna Stewart",Mist,Laces,14,13,1,12,3,0,2,2,1,17,2025-01-20,7,17,0,4,2,3
+9t71p5ri5690,"Courtney Vandersloot",Mist,Laces,11,6,1,5,1,2,1,2,2,5,2025-01-20,2,11,1,5,0,0
+9t71p5ri5690,"Dijonai Carrington",Mist,Laces,7,3,0,3,2,3,1,3,3,2,2025-01-20,1,10,0,3,0,1
+9t71p5ri5690,"Jackie Young",Laces,Mist,0,0,0,0,0,0,0,0,0,0,2025-01-20,0,0,0,0,0,0
+9t71p5ri5690,"Jewell Loyd",Mist,Laces,12,4,2,2,0,0,0,2,1,10,2025-01-20,5,8,0,1,0,0
+9t71p5ri5690,"Kate Martin",Laces,Mist,10,4,0,4,3,3,0,1,2,10,2025-01-20,2,10,2,7,2,2
+9t71p5ri5690,"Kayla Mcbride",Laces,Mist,15,7,1,6,3,1,0,2,1,21,2025-01-20,9,22,2,7,1,1
+9t71p5ri5690,"Rickea Jackson",Mist,Laces,9,3,0,3,0,0,0,2,2,9,2025-01-20,3,10,1,2,1,1
+9t71p5ri5690,"Stefanie Dolson",Laces,Mist,6,4,0,4,0,0,0,1,1,4,2025-01-20,2,4,0,1,0,0
+9t71p5ri5690,"Tiffany Hayes",Laces,Mist,13,7,1,6,0,0,0,2,2,16,2025-01-20,6,16,2,4,1,2
+b0zhbxptb17f,"Aliyah Boston",Vinyl,"Lunar Owls",6,4,0,4,3,1,1,0,1,0,2025-02-03,0,1,0,0,0,0
+b0zhbxptb17f,"Allisha Gray","Lunar Owls",Vinyl,14,2,1,1,3,1,0,0,4,20,2025-02-03,8,17,2,5,2,2
+b0zhbxptb17f,"Arike Ogunbowale",Vinyl,"Lunar Owls",10,1,0,1,0,1,0,2,4,12,2025-02-03,6,12,0,4,0,0
+b0zhbxptb17f,"Cameron Brink","Lunar Owls",Vinyl,0,0,0,0,0,0,0,0,0,0,2025-02-03,0,0,0,0,0,0
+b0zhbxptb17f,"Courtney Williams","Lunar Owls",Vinyl,6,3,0,3,3,0,0,1,1,10,2025-02-03,3,6,0,1,2,2
+b0zhbxptb17f,"Dearica Hamby",Vinyl,"Lunar Owls",13,10,2,8,1,0,0,3,1,14,2025-02-03,4,6,0,1,4,5
+b0zhbxptb17f,"Jordin Canada",Vinyl,"Lunar Owls",9,3,2,1,3,0,0,3,1,8,2025-02-03,3,9,0,0,1,1
+b0zhbxptb17f,"Napheesa Collier","Lunar Owls",Vinyl,17,12,1,11,5,4,0,1,4,36,2025-02-03,13,18,0,1,6,6
+b0zhbxptb17f,"Rae Burrell",Vinyl,"Lunar Owls",8,1,0,1,3,0,1,0,3,13,2025-02-03,5,8,1,2,1,3
+b0zhbxptb17f,"Rhyne Howard",Vinyl,"Lunar Owls",12,5,0,5,1,2,0,2,5,21,2025-02-03,9,18,3,9,0,1
+b0zhbxptb17f,"Shakira Austin","Lunar Owls",Vinyl,7,6,0,6,2,0,0,2,4,5,2025-02-03,2,6,0,0,1,1
+b0zhbxptb17f,"Skylar Diggins Smith","Lunar Owls",Vinyl,13,1,0,1,6,2,0,2,4,14,2025-02-03,5,10,2,3,1,1
+cvf9757d5r0n,"Aaliyah Edwards",Mist,"Lunar Owls",10,4,0,4,1,1,1,3,5,12,2025-02-08,6,9,0,0,0,1
+cvf9757d5r0n,"Allisha Gray","Lunar Owls",Mist,16,9,2,7,6,2,0,4,6,18,2025-02-08,4,13,4,9,3,3
+cvf9757d5r0n,"Breanna Stewart",Mist,"Lunar Owls",17,17,3,14,4,1,0,1,3,23,2025-02-08,7,19,1,2,5,5
+cvf9757d5r0n,"Cameron Brink","Lunar Owls",Mist,0,0,0,0,0,0,0,0,0,0,2025-02-08,0,0,0,0,0,0
+cvf9757d5r0n,"Courtney Vandersloot",Mist,"Lunar Owls",12,1,0,1,5,0,0,1,1,15,2025-02-08,7,11,1,1,0,0
+cvf9757d5r0n,"Courtney Williams","Lunar Owls",Mist,7,2,0,2,5,1,0,0,1,9,2025-02-08,4,7,0,0,1,1
+cvf9757d5r0n,"Dijonai Carrington",Mist,"Lunar Owls",4,3,2,1,3,0,0,2,1,5,2025-02-08,1,5,1,1,1,2
+cvf9757d5r0n,"Jewell Loyd",Mist,"Lunar Owls",10,0,0,0,5,1,1,4,1,11,2025-02-08,4,9,1,4,1,1
+cvf9757d5r0n,"Nalyssa Smith",Mist,"Lunar Owls",0,0,0,0,0,0,0,0,0,0,2025-02-08,0,0,0,0,0,0
+cvf9757d5r0n,"Napheesa Collier","Lunar Owls",Mist,19,15,4,11,3,2,1,4,6,38,2025-02-08,16,27,0,2,5,5
+cvf9757d5r0n,"Rickea Jackson",Mist,"Lunar Owls",8,5,1,4,1,0,0,1,6,15,2025-02-08,5,11,3,3,1,1
+cvf9757d5r0n,"Shakira Austin","Lunar Owls",Mist,5,2,0,2,1,0,0,0,2,7,2025-02-08,3,5,0,0,1,1
+cvf9757d5r0n,"Skylar Diggins Smith","Lunar Owls",Mist,13,2,0,2,5,4,0,4,4,13,2025-02-08,6,12,1,3,0,0
+cy9e2nxmf95w,"Alyssa Thomas",Laces,Phantom,31,8,2,6,4,1,0,2,3,18,2025-01-18,7,8,0,0,2,3
+cy9e2nxmf95w,"Brittney Griner",Phantom,Laces,33,6,0,6,0,0,1,1,1,7,2025-01-18,3,7,1,2,0,2
+cy9e2nxmf95w,"Jackie Young",Laces,Phantom,0,0,0,0,0,0,0,0,0,0,2025-01-18,0,0,0,0,0,0
+cy9e2nxmf95w,"Kate Martin",Laces,Phantom,8,10,1,9,1,2,0,1,2,9,2025-01-18,4,9,1,4,0,0
+cy9e2nxmf95w,"Katie Lou Samuelson",Phantom,Laces,8,2,2,0,2,0,0,1,1,2,2025-01-18,1,5,0,1,0,1
+cy9e2nxmf95w,"Kayla Mcbride",Laces,Phantom,35,6,1,5,5,3,0,1,1,28,2025-01-18,10,19,7,15,1,1
+cy9e2nxmf95w,"Marina Mabrey",Phantom,Laces,0,0,0,0,0,0,0,0,0,0,2025-01-18,0,0,0,0,0,0
+cy9e2nxmf95w,"Natasha Cloud",Phantom,Laces,13,3,0,3,2,0,0,4,2,10,2025-01-18,4,11,2,5,0,0
+cy9e2nxmf95w,"Sabrina Ionescu",Phantom,Laces,32,4,0,4,2,2,1,0,0,18,2025-01-18,6,17,5,13,1,2
+cy9e2nxmf95w,"Satou Sabally",Phantom,Laces,31,7,2,5,2,2,0,4,4,11,2025-01-18,4,14,1,4,1,1
+cy9e2nxmf95w,"Stefanie Dolson",Laces,Phantom,33,5,0,5,3,0,0,2,0,14,2025-01-18,5,7,2,4,1,1
+cy9e2nxmf95w,"Tiffany Hayes",Laces,Phantom,13,7,2,5,10,3,0,3,2,14,2025-01-18,6,14,2,5,0,1
+ez47fwm7a025,"Aaliyah Edwards",Mist,Phantom,8,4,1,3,0,0,1,0,2,2,2025-02-03,1,8,0,0,0,0
+ez47fwm7a025,"Breanna Stewart",Mist,Phantom,15,13,1,12,4,1,0,2,3,19,2025-02-03,7,18,0,2,4,4
+ez47fwm7a025,"Brittney Griner",Phantom,Mist,13,8,2,6,2,0,2,1,1,20,2025-02-03,8,13,0,0,2,3
+ez47fwm7a025,"Courtney Vandersloot",Mist,Phantom,7,2,0,2,3,1,0,1,3,2,2025-02-03,1,4,0,1,0,0
+ez47fwm7a025,"Dijonai Carrington",Mist,Phantom,5,2,0,2,0,0,0,1,0,11,2025-02-03,3,6,3,4,1,1
+ez47fwm7a025,"Jewell Loyd",Mist,Phantom,13,4,2,2,1,0,0,1,3,13,2025-02-03,4,8,3,5,1,1
+ez47fwm7a025,"Katie Lou Samuelson",Phantom,Mist,7,3,0,3,0,1,0,0,1,0,2025-02-03,0,6,0,2,0,0
+ez47fwm7a025,"Marina Mabrey",Phantom,Mist,0,0,0,0,0,0,0,0,0,0,2025-02-03,0,0,0,0,0,0
+ez47fwm7a025,"Nalyssa Smith",Mist,Phantom,0,0,0,0,0,0,0,0,0,0,2025-02-03,0,0,0,0,0,0
+ez47fwm7a025,"Natasha Cloud",Phantom,Mist,10,8,0,8,4,1,0,1,5,7,2025-02-03,2,5,1,2,1,1
+ez47fwm7a025,"Rickea Jackson",Mist,Phantom,12,4,1,3,1,0,1,2,2,17,2025-02-03,7,16,2,7,1,1
+ez47fwm7a025,"Sabrina Ionescu",Phantom,Mist,18,5,0,5,9,0,0,0,1,12,2025-02-03,5,16,0,4,1,1
+ez47fwm7a025,"Satou Sabally",Phantom,Mist,11,7,1,6,1,0,0,3,3,22,2025-02-03,9,17,2,3,1,2
+f0yh4kyfe5iy,"Allisha Gray","Lunar Owls",Laces,16,6,1,5,2,1,1,1,5,19,2025-01-31,6,12,3,5,2,3
+f0yh4kyfe5iy,"Alyssa Thomas",Laces,"Lunar Owls",0,0,0,0,0,0,0,0,0,0,2025-01-31,0,0,0,0,0,0
+f0yh4kyfe5iy,"Cameron Brink","Lunar Owls",Laces,0,0,0,0,0,0,0,0,0,0,2025-01-31,0,0,0,0,0,0
+f0yh4kyfe5iy,"Courtney Williams","Lunar Owls",Laces,9,2,0,2,5,0,0,0,1,8,2025-01-31,4,7,0,1,0,0
+f0yh4kyfe5iy,"Jackie Young",Laces,"Lunar Owls",7,2,0,2,3,0,0,0,4,12,2025-01-31,4,4,1,1,2,3
+f0yh4kyfe5iy,"Kate Martin",Laces,"Lunar Owls",9,2,0,2,0,0,0,3,2,4,2025-01-31,2,5,0,2,0,0
+f0yh4kyfe5iy,"Kayla Mcbride",Laces,"Lunar Owls",17,8,1,7,2,1,0,4,3,26,2025-01-31,9,14,6,8,1,1
+f0yh4kyfe5iy,"Napheesa Collier","Lunar Owls",Laces,14,7,0,7,0,1,1,1,5,26,2025-01-31,10,14,0,1,4,6
+f0yh4kyfe5iy,"Natisha Hiedeman",Laces,"Lunar Owls",3,1,0,1,0,0,0,0,1,2,2025-01-31,1,3,0,1,0,0
+f0yh4kyfe5iy,"Shakira Austin","Lunar Owls",Laces,8,4,2,2,2,1,0,4,3,6,2025-01-31,3,5,0,0,0,0
+f0yh4kyfe5iy,"Skylar Diggins Smith","Lunar Owls",Laces,10,2,2,0,4,2,0,1,4,16,2025-01-31,5,10,1,4,3,4
+f0yh4kyfe5iy,"Stefanie Dolson",Laces,"Lunar Owls",10,4,3,1,0,0,0,1,2,12,2025-01-31,5,9,0,2,1,1
+f0yh4kyfe5iy,"Tiffany Hayes",Laces,"Lunar Owls",12,3,0,3,5,2,0,1,6,17,2025-01-31,6,13,1,4,2,3
+j2riqv1tez5e,"Aliyah Boston",Vinyl,Laces,7,2,0,2,0,0,1,0,2,4,2025-01-24,2,3,0,0,0,0
+j2riqv1tez5e,"Alyssa Thomas",Laces,Vinyl,10,12,3,9,4,2,0,2,0,14,2025-01-24,5,9,0,0,2,4
+j2riqv1tez5e,"Arike Ogunbowale",Vinyl,Laces,12,2,0,2,4,1,1,1,2,16,2025-01-24,5,12,4,8,1,1
+j2riqv1tez5e,"Dearica Hamby",Vinyl,Laces,13,9,2,7,2,4,0,2,5,18,2025-01-24,9,15,0,2,0,0
+j2riqv1tez5e,"Jackie Young",Laces,Vinyl,0,0,0,0,0,0,0,0,0,0,2025-01-24,0,0,0,0,0,0
+j2riqv1tez5e,"Jordin Canada",Vinyl,Laces,9,2,0,2,4,0,0,0,2,14,2025-01-24,6,11,1,2,1,2
+j2riqv1tez5e,"Kate Martin",Laces,Vinyl,11,3,1,2,1,1,0,0,4,11,2025-01-24,5,11,1,5,0,0
+j2riqv1tez5e,"Kayla Mcbride",Laces,Vinyl,16,4,0,4,3,1,0,4,1,22,2025-01-24,7,14,2,4,4,4
+j2riqv1tez5e,"Rae Burrell",Vinyl,Laces,6,2,0,2,1,0,0,2,1,11,2025-01-24,4,6,1,2,1,1
+j2riqv1tez5e,"Rhyne Howard",Vinyl,Laces,14,4,0,4,4,1,0,2,1,16,2025-01-24,6,12,3,7,1,1
+j2riqv1tez5e,"Stefanie Dolson",Laces,Vinyl,9,5,1,4,0,0,1,1,0,10,2025-01-24,4,6,1,1,1,1
+j2riqv1tez5e,"Tiffany Hayes",Laces,Vinyl,13,4,1,3,2,1,0,1,4,26,2025-01-24,11,19,4,8,0,0
+jb3jklxmsrks,"Aliyah Boston",Vinyl,Rose,10,7,4,3,2,1,0,1,2,6,2025-01-17,3,9,0,0,0,0
+jb3jklxmsrks,"Angel Reese",Rose,Vinyl,13,14,2,12,4,0,0,5,4,10,2025-01-17,3,7,0,0,2,2
+jb3jklxmsrks,"Arike Ogunbowale",Vinyl,Rose,14,1,0,1,2,1,0,1,3,10,2025-01-17,5,11,0,4,0,0
+jb3jklxmsrks,"Azura Stevens",Rose,Vinyl,9,8,4,4,0,0,1,0,3,6,2025-01-17,3,10,0,2,0,0
+jb3jklxmsrks,"Brittney Sykes",Rose,Vinyl,9,0,0,0,2,0,0,0,3,9,2025-01-17,4,9,1,1,0,0
+jb3jklxmsrks,"Chelsea Gray",Rose,Vinyl,16,9,2,7,6,2,0,3,1,21,2025-01-17,8,20,2,7,2,2
+jb3jklxmsrks,"Dearica Hamby",Vinyl,Rose,13,13,2,11,4,2,2,5,5,17,2025-01-17,6,12,0,1,3,4
+jb3jklxmsrks,"Jordin Canada",Vinyl,Rose,9,0,0,0,1,3,0,2,1,6,2025-01-17,3,7,0,3,0,0
+jb3jklxmsrks,"Kahleah Copper",Rose,Vinyl,16,3,1,2,1,2,0,3,3,24,2025-01-17,8,15,2,5,3,4
+jb3jklxmsrks,"Lexie Hull",Rose,Vinyl,6,1,0,1,1,0,0,0,0,3,2025-01-17,1,2,1,1,0,0
+jb3jklxmsrks,"Rae Burrell",Vinyl,Rose,5,0,0,0,0,0,1,0,0,7,2025-01-17,2,5,1,1,1,1
+jb3jklxmsrks,"Rhyne Howard",Vinyl,Rose,18,6,0,6,1,1,2,1,1,33,2025-01-17,10,19,6,12,3,4
+jcdgg9yavn4e,"Aaliyah Edwards",Mist,"Lunar Owls",8,8,3,5,3,0,0,1,2,10,2025-01-17,5,7,0,0,0,0
+jcdgg9yavn4e,"Allisha Gray","Lunar Owls",Mist,15,6,0,6,1,1,0,3,3,15,2025-01-17,5,13,0,4,3,4
+jcdgg9yavn4e,"Breanna Stewart",Mist,"Lunar Owls",11,14,1,13,2,1,0,1,3,6,2025-01-17,2,11,0,5,1,2
+jcdgg9yavn4e,"Cameron Brink","Lunar Owls",Mist,0,0,0,0,0,0,0,0,0,0,2025-01-17,0,0,0,0,0,0
+jcdgg9yavn4e,"Courtney Vandersloot",Mist,"Lunar Owls",8,2,0,2,2,0,0,2,3,11,2025-01-17,4,7,1,2,1,1
+jcdgg9yavn4e,"Courtney Williams","Lunar Owls",Mist,10,7,0,7,4,0,1,0,3,14,2025-01-17,6,10,0,1,1,1
+jcdgg9yavn4e,"Dijonai Carrington",Mist,"Lunar Owls",11,5,0,5,3,1,1,2,3,8,2025-01-17,3,6,0,2,1,1
+jcdgg9yavn4e,"Jewell Loyd",Mist,"Lunar Owls",12,5,3,2,1,0,1,3,2,30,2025-01-17,10,21,4,9,4,5
+jcdgg9yavn4e,"Napheesa Collier","Lunar Owls",Mist,19,11,1,10,3,2,0,1,1,27,2025-01-17,11,19,3,6,1,3
+jcdgg9yavn4e,"Rickea Jackson",Mist,"Lunar Owls",12,2,1,1,1,2,0,1,2,15,2025-01-17,6,15,1,3,1,1
+jcdgg9yavn4e,"Shakira Austin","Lunar Owls",Mist,7,2,1,1,0,1,1,3,2,4,2025-01-17,1,3,0,0,1,1
+jcdgg9yavn4e,"Skylar Diggins Smith","Lunar Owls",Mist,11,4,1,3,1,1,1,0,5,21,2025-01-17,8,17,3,8,1,3
+m9sh1b3jm0p1,"Aliyah Boston",Vinyl,Phantom,10,7,3,4,1,0,0,0,2,11,2025-01-20,4,8,0,0,2,2
+m9sh1b3jm0p1,"Arike Ogunbowale",Vinyl,Phantom,12,3,0,3,4,1,0,0,1,21,2025-01-20,9,17,2,5,1,2
+m9sh1b3jm0p1,"Brittney Griner",Phantom,Vinyl,10,5,0,5,1,0,0,1,4,13,2025-01-20,5,8,0,0,2,2
+m9sh1b3jm0p1,"Dearica Hamby",Vinyl,Phantom,11,5,1,4,4,1,0,1,2,22,2025-01-20,9,11,0,0,2,4
+m9sh1b3jm0p1,"Jordin Canada",Vinyl,Phantom,9,4,1,3,1,1,0,0,1,8,2025-01-20,2,7,0,0,2,2
+m9sh1b3jm0p1,"Katie Lou Samuelson",Phantom,Vinyl,5,3,1,2,1,1,0,2,1,11,2025-01-20,5,9,1,3,0,0
+m9sh1b3jm0p1,"Marina Mabrey",Phantom,Vinyl,0,0,0,0,0,0,0,0,0,0,2025-01-20,0,0,0,0,0,0
+m9sh1b3jm0p1,"Natasha Cloud",Phantom,Vinyl,15,6,0,6,2,0,0,3,2,11,2025-01-20,3,8,1,6,2,2
+m9sh1b3jm0p1,"Natisha Hiedeman",Phantom,Vinyl,9,4,0,4,3,1,0,0,3,8,2025-01-20,3,7,2,5,0,0
+m9sh1b3jm0p1,"Rae Burrell",Vinyl,Phantom,10,0,0,0,2,1,1,1,0,8,2025-01-20,3,10,0,3,1,1
+m9sh1b3jm0p1,"Rhyne Howard",Vinyl,Phantom,11,8,2,6,4,1,0,1,1,14,2025-01-20,4,10,2,5,2,2
+m9sh1b3jm0p1,"Sabrina Ionescu",Phantom,Vinyl,17,7,1,6,6,0,0,4,3,14,2025-01-20,6,11,2,4,0,0
+m9sh1b3jm0p1,"Satou Sabally",Phantom,Vinyl,14,4,1,3,3,0,0,3,3,12,2025-01-20,5,9,2,4,0,1
+nyf4d8danani,"Aaliyah Edwards",Mist,Rose,9,5,2,3,0,1,1,1,1,14,2025-01-25,5,9,0,0,2,2
+nyf4d8danani,"Angel Reese",Rose,Mist,8,6,1,5,1,1,0,3,4,4,2025-01-25,2,6,0,0,0,0
+nyf4d8danani,"Azura Stevens",Rose,Mist,10,7,1,6,3,0,0,1,1,16,2025-01-25,5,10,2,4,2,2
+nyf4d8danani,"Breanna Stewart",Mist,Rose,16,9,0,9,2,2,1,4,3,20,2025-01-25,10,18,0,3,0,2
+nyf4d8danani,"Brittney Sykes",Rose,Mist,5,0,0,0,1,1,0,0,1,2,2025-01-25,1,5,0,0,0,0
+nyf4d8danani,"Chelsea Gray",Rose,Mist,15,7,0,7,6,1,1,3,4,12,2025-01-25,5,13,1,3,1,1
+nyf4d8danani,"Courtney Vandersloot",Mist,Rose,8,5,0,5,2,0,0,0,2,9,2025-01-25,4,6,0,0,1,1
+nyf4d8danani,"Dijonai Carrington",Mist,Rose,0,0,0,0,0,0,0,0,0,0,2025-01-25,0,0,0,0,0,0
+nyf4d8danani,"Jewell Loyd",Mist,Rose,15,5,1,4,7,1,0,3,3,13,2025-01-25,3,11,2,5,3,3
+nyf4d8danani,"Kahleah Copper",Rose,Mist,12,4,1,3,0,1,0,1,3,18,2025-01-25,7,16,2,5,1,1
+nyf4d8danani,"Lexie Hull",Rose,Mist,10,3,2,1,3,0,0,0,4,19,2025-01-25,8,11,1,2,1,1
+nyf4d8danani,"Nalyssa Smith",Mist,Rose,0,0,0,0,0,0,0,0,0,0,2025-01-25,0,0,0,0,0,0
+nyf4d8danani,"Rickea Jackson",Mist,Rose,15,3,1,2,2,0,0,2,4,10,2025-01-25,3,10,0,3,2,2
+o2o27kwyy1z5,"Allisha Gray","Lunar Owls",Phantom,14,5,1,4,5,1,0,0,4,21,2025-01-25,6,18,5,12,2,2
+o2o27kwyy1z5,"Brittney Griner",Phantom,"Lunar Owls",12,5,0,5,1,0,1,0,1,10,2025-01-25,5,12,0,1,0,0
+o2o27kwyy1z5,"Cameron Brink","Lunar Owls",Phantom,0,0,0,0,0,0,0,0,0,0,2025-01-25,0,0,0,0,0,0
+o2o27kwyy1z5,"Courtney Williams","Lunar Owls",Phantom,8,4,0,4,4,0,0,0,4,6,2025-01-25,3,8,0,1,0,0
+o2o27kwyy1z5,"Katie Lou Samuelson",Phantom,"Lunar Owls",9,4,1,3,0,0,0,1,3,7,2025-01-25,3,6,1,3,0,2
+o2o27kwyy1z5,"Marina Mabrey",Phantom,"Lunar Owls",0,0,0,0,0,0,0,0,0,0,2025-01-25,0,0,0,0,0,0
+o2o27kwyy1z5,"Napheesa Collier","Lunar Owls",Phantom,18,18,2,16,5,3,1,2,3,37,2025-01-25,13,17,5,7,3,3
+o2o27kwyy1z5,"Natasha Cloud",Phantom,"Lunar Owls",10,7,2,5,6,0,0,1,2,4,2025-01-25,1,8,0,4,1,1
+o2o27kwyy1z5,"Natisha Hiedeman",Phantom,"Lunar Owls",11,3,0,3,1,0,1,2,3,18,2025-01-25,7,13,2,5,2,2
+o2o27kwyy1z5,"Sabrina Ionescu",Phantom,"Lunar Owls",0,0,0,0,0,0,0,0,0,0,2025-01-25,0,0,0,0,0,0
+o2o27kwyy1z5,"Satou Sabally",Phantom,"Lunar Owls",16,9,1,8,4,1,0,5,2,19,2025-01-25,9,21,1,7,0,1
+o2o27kwyy1z5,"Shakira Austin","Lunar Owls",Phantom,7,2,0,2,0,0,1,0,2,2,2025-01-25,1,5,0,0,0,0
+o2o27kwyy1z5,"Skylar Diggins Smith","Lunar Owls",Phantom,11,3,2,1,2,1,0,1,3,16,2025-01-25,4,11,0,3,4,5
+sjrwaj31kq62,"Aaliyah Edwards",Mist,Vinyl,10,6,0,6,1,1,1,2,4,16,2025-02-01,8,9,0,0,0,1
+sjrwaj31kq62,"Aliyah Boston",Vinyl,Mist,4,1,0,1,1,0,0,0,2,4,2025-02-01,2,4,0,0,0,1
+sjrwaj31kq62,"Arike Ogunbowale",Vinyl,Mist,14,2,0,2,6,0,1,1,2,7,2025-02-01,2,11,1,4,1,1
+sjrwaj31kq62,"Breanna Stewart",Mist,Vinyl,16,10,0,10,4,3,1,1,2,23,2025-02-01,7,14,1,2,4,4
+sjrwaj31kq62,"Courtney Vandersloot",Mist,Vinyl,11,1,0,1,9,1,0,0,4,10,2025-02-01,5,7,0,0,0,0
+sjrwaj31kq62,"Dearica Hamby",Vinyl,Mist,16,15,4,11,1,1,0,4,3,35,2025-02-01,14,24,2,4,3,3
+sjrwaj31kq62,"Dijonai Carrington",Mist,Vinyl,0,0,0,0,0,0,0,0,0,0,2025-02-01,0,0,0,0,0,0
+sjrwaj31kq62,"Jewell Loyd",Mist,Vinyl,12,2,0,2,1,1,0,0,4,15,2025-02-01,3,9,1,2,4,5
+sjrwaj31kq62,"Jordin Canada",Vinyl,Mist,8,2,2,0,3,0,0,2,4,4,2025-02-01,2,7,0,1,0,0
+sjrwaj31kq62,"Nalyssa Smith",Mist,Vinyl,0,0,0,0,0,0,0,0,0,0,2025-02-01,0,0,0,0,0,0
+sjrwaj31kq62,"Rae Burrell",Vinyl,Mist,7,2,1,1,1,0,0,1,1,6,2025-02-01,2,5,0,1,1,1
+sjrwaj31kq62,"Rhyne Howard",Vinyl,Mist,11,5,1,4,1,2,0,1,3,11,2025-02-01,2,8,1,6,3,3
+sjrwaj31kq62,"Rickea Jackson",Mist,Vinyl,11,2,0,2,0,0,1,1,0,13,2025-02-01,6,11,1,2,0,0
+t4qkedtx86as,"Allisha Gray","Lunar Owls",Phantom,11,6,0,6,2,0,0,2,3,23,2025-02-07,7,12,5,8,2,2
+t4qkedtx86as,"Brittney Griner",Phantom,"Lunar Owls",14,5,0,5,1,0,1,2,0,23,2025-02-07,11,14,0,0,1,3
+t4qkedtx86as,"Cameron Brink","Lunar Owls",Phantom,0,0,0,0,0,0,0,0,0,0,2025-02-07,0,0,0,0,0,0
+t4qkedtx86as,"Courtney Williams","Lunar Owls",Phantom,8,4,0,4,5,0,0,0,1,19,2025-02-07,7,13,2,2,1,1
+t4qkedtx86as,"Katie Lou Samuelson",Phantom,"Lunar Owls",7,0,0,0,1,0,0,0,3,10,2025-02-07,4,7,2,2,0,0
+t4qkedtx86as,"Marina Mabrey",Phantom,"Lunar Owls",0,0,0,0,0,0,0,0,0,0,2025-02-07,0,0,0,0,0,0
+t4qkedtx86as,"Napheesa Collier","Lunar Owls",Phantom,17,6,0,6,3,2,0,0,3,20,2025-02-07,8,14,2,4,1,1
+t4qkedtx86as,"Natasha Cloud",Phantom,"Lunar Owls",12,0,0,0,8,0,0,1,1,13,2025-02-07,4,6,1,3,2,2
+t4qkedtx86as,"Sabrina Ionescu",Phantom,"Lunar Owls",13,5,0,5,1,1,0,1,3,13,2025-02-07,5,11,1,4,1,1
+t4qkedtx86as,"Satou Sabally",Phantom,"Lunar Owls",11,7,1,6,3,1,0,3,3,17,2025-02-07,5,11,1,4,3,3
+t4qkedtx86as,"Shakira Austin","Lunar Owls",Phantom,10,6,6,0,1,0,1,0,2,14,2025-02-07,4,9,0,0,3,3
+t4qkedtx86as,"Skylar Diggins Smith","Lunar Owls",Phantom,10,2,0,2,7,1,0,0,4,18,2025-02-07,7,11,0,3,2,2
+t6gd1wnapycm,"Aaliyah Edwards",Mist,Rose,10,3,1,2,0,0,0,4,4,12,2025-02-07,4,5,0,0,2,2
+t6gd1wnapycm,"Angel Reese",Rose,Mist,11,12,6,6,1,1,0,1,4,12,2025-02-07,4,10,0,0,3,3
+t6gd1wnapycm,"Azura Stevens",Rose,Mist,7,9,1,8,1,1,0,1,1,15,2025-02-07,6,9,1,4,1,1
+t6gd1wnapycm,"Breanna Stewart",Mist,Rose,12,4,1,3,0,0,4,1,2,12,2025-02-07,5,11,0,1,1,3
+t6gd1wnapycm,"Brittney Sykes",Rose,Mist,6,0,0,0,1,0,0,1,2,2,2025-02-07,0,6,0,1,1,1
+t6gd1wnapycm,"Chelsea Gray",Rose,Mist,15,4,0,4,7,0,0,3,3,15,2025-02-07,7,16,0,3,1,2
+t6gd1wnapycm,"Courtney Vandersloot",Mist,Rose,6,2,0,2,1,1,1,2,1,4,2025-02-07,1,4,0,0,1,1
+t6gd1wnapycm,"Dijonai Carrington",Mist,Rose,8,8,0,8,1,1,0,0,4,10,2025-02-07,5,12,0,2,0,1
+t6gd1wnapycm,"Jewell Loyd",Mist,Rose,8,2,0,2,3,1,0,0,1,8,2025-02-07,4,11,0,3,0,0
+t6gd1wnapycm,"Kahleah Copper",Rose,Mist,14,9,2,7,1,1,0,3,3,21,2025-02-07,10,21,1,5,0,0
+t6gd1wnapycm,"Lexie Hull",Rose,Mist,6,6,3,3,2,0,0,2,4,6,2025-02-07,3,6,0,1,0,0
+t6gd1wnapycm,"Nalyssa Smith",Mist,Rose,0,0,0,0,0,0,0,0,0,0,2025-02-07,0,0,0,0,0,0
+t6gd1wnapycm,"Rickea Jackson",Mist,Rose,14,7,1,6,1,0,0,1,1,17,2025-02-07,5,12,1,4,3,3
+xagwq6rm8vw7,"Allisha Gray","Lunar Owls",Rose,16,9,1,8,1,1,0,1,3,21,2025-01-18,9,15,2,6,1,2
+xagwq6rm8vw7,"Angel Reese",Rose,"Lunar Owls",11,6,3,3,1,0,0,0,1,12,2025-01-18,5,10,0,0,1,3
+xagwq6rm8vw7,"Azura Stevens",Rose,"Lunar Owls",11,4,1,3,0,1,0,1,2,17,2025-01-18,7,8,2,3,1,2
+xagwq6rm8vw7,"Brittney Sykes",Rose,"Lunar Owls",14,5,1,4,3,0,0,4,6,13,2025-01-18,5,9,0,3,2,2
+xagwq6rm8vw7,"Cameron Brink","Lunar Owls",Rose,0,0,0,0,0,0,0,0,0,0,2025-01-18,0,0,0,0,0,0
+xagwq6rm8vw7,"Chelsea Gray",Rose,"Lunar Owls",13,2,0,2,6,0,0,3,1,14,2025-01-18,5,9,1,2,2,2
+xagwq6rm8vw7,"Courtney Williams","Lunar Owls",Rose,11,1,0,1,8,1,0,2,2,10,2025-01-18,4,7,2,2,0,0
+xagwq6rm8vw7,"Kahleah Copper",Rose,"Lunar Owls",13,7,1,6,1,1,0,2,1,14,2025-01-18,7,13,0,2,0,1
+xagwq6rm8vw7,"Lexie Hull",Rose,"Lunar Owls",3,0,0,0,0,0,0,0,1,0,2025-01-18,0,1,0,0,0,0
+xagwq6rm8vw7,"Napheesa Collier","Lunar Owls",Rose,18,6,0,6,4,1,1,1,5,31,2025-01-18,14,23,1,6,2,2
+xagwq6rm8vw7,"Shakira Austin","Lunar Owls",Rose,7,3,3,0,1,1,1,0,2,8,2025-01-18,3,8,0,0,1,2
+xagwq6rm8vw7,"Skylar Diggins Smith","Lunar Owls",Rose,12,2,1,1,4,2,0,1,3,9,2025-01-18,3,6,1,2,1,1
+yogi89xx6aw5,"Aliyah Boston",Vinyl,"Lunar Owls",13,9,3,6,1,0,0,1,3,14,2025-01-27,6,13,0,0,1,1
+yogi89xx6aw5,"Allisha Gray","Lunar Owls",Vinyl,15,5,1,4,3,0,0,1,1,19,2025-01-27,8,14,1,3,1,1
+yogi89xx6aw5,"Arike Ogunbowale",Vinyl,"Lunar Owls",15,10,1,9,7,1,0,0,2,12,2025-01-27,5,18,2,6,0,0
+yogi89xx6aw5,"Cameron Brink","Lunar Owls",Vinyl,0,0,0,0,0,0,0,0,0,0,2025-01-27,0,0,0,0,0,0
+yogi89xx6aw5,"Courtney Williams","Lunar Owls",Vinyl,8,6,1,5,4,1,0,1,1,6,2025-01-27,3,11,0,0,0,0
+yogi89xx6aw5,"Dearica Hamby",Vinyl,"Lunar Owls",0,0,0,0,0,0,0,0,0,0,2025-01-27,0,0,0,0,0,0
+yogi89xx6aw5,"Jordin Canada",Vinyl,"Lunar Owls",11,4,1,3,1,0,0,0,0,14,2025-01-27,5,11,2,5,1,1
+yogi89xx6aw5,"Napheesa Collier","Lunar Owls",Vinyl,18,17,1,16,2,0,3,2,4,19,2025-01-27,8,16,0,2,2,2
+yogi89xx6aw5,"Rae Burrell",Vinyl,"Lunar Owls",7,6,3,3,0,1,0,1,1,10,2025-01-27,4,13,2,5,0,0
+yogi89xx6aw5,"Rhyne Howard",Vinyl,"Lunar Owls",13,4,2,2,1,0,1,1,6,7,2025-01-27,2,10,1,4,1,1
+yogi89xx6aw5,"Shakira Austin","Lunar Owls",Vinyl,6,4,1,3,1,0,1,0,2,7,2025-01-27,2,6,0,1,2,2
+yogi89xx6aw5,"Skylar Diggins Smith","Lunar Owls",Vinyl,12,3,1,2,4,1,0,0,1,16,2025-01-27,5,12,2,3,2,2
+zfxe4imyud75,"Angel Reese",Rose,Phantom,11,7,2,5,0,1,2,2,2,13,2025-01-31,5,8,0,0,2,3
+zfxe4imyud75,"Azura Stevens",Rose,Phantom,11,6,2,4,0,1,1,0,1,19,2025-01-31,8,15,0,5,2,3
+zfxe4imyud75,"Brittney Griner",Phantom,Rose,13,4,0,4,1,0,2,4,4,12,2025-01-31,6,11,0,1,0,0
+zfxe4imyud75,"Brittney Sykes",Rose,Phantom,0,0,0,0,0,0,0,0,0,0,2025-01-31,0,0,0,0,0,0
+zfxe4imyud75,"Chelsea Gray",Rose,Phantom,15,0,0,0,6,0,0,1,1,16,2025-01-31,7,20,2,6,0,0
+zfxe4imyud75,"Kahleah Copper",Rose,Phantom,11,9,0,9,1,0,0,1,2,10,2025-01-31,5,15,0,2,0,0
+zfxe4imyud75,"Katie Lou Samuelson",Phantom,Rose,9,1,0,1,2,0,0,1,1,7,2025-01-31,3,4,1,1,0,0
+zfxe4imyud75,"Lexie Hull",Rose,Phantom,13,3,1,2,1,2,0,0,2,5,2025-01-31,2,5,1,3,0,1
+zfxe4imyud75,"Marina Mabrey",Phantom,Rose,0,0,0,0,0,0,0,0,0,0,2025-01-31,0,0,0,0,0,0
+zfxe4imyud75,"Natasha Cloud",Phantom,Rose,12,3,1,2,4,1,1,1,2,11,2025-01-31,5,8,1,3,0,0
+zfxe4imyud75,"Sabrina Ionescu",Phantom,Rose,19,9,2,7,8,0,2,3,1,32,2025-01-31,11,18,7,10,1,3
+zfxe4imyud75,"Satou Sabally",Phantom,Rose,9,6,0,6,2,1,0,1,3,13,2025-01-31,4,10,3,4,1,2
+zvudhzbxaaiq,"Alyssa Thomas",Laces,Rose,0,0,0,0,0,0,0,0,0,0,2025-02-01,0,0,0,0,0,0
+zvudhzbxaaiq,"Angel Reese",Rose,Laces,8,15,5,10,3,0,1,0,5,6,2025-02-01,2,7,0,0,1,1
+zvudhzbxaaiq,"Azura Stevens",Rose,Laces,13,8,3,5,2,0,0,0,3,23,2025-02-01,11,18,0,4,1,2
+zvudhzbxaaiq,"Brittney Sykes",Rose,Laces,0,0,0,0,0,0,0,0,0,0,2025-02-01,0,0,0,0,0,0
+zvudhzbxaaiq,"Chelsea Gray",Rose,Laces,15,3,2,1,8,0,0,2,2,28,2025-02-01,10,16,3,4,2,2
+zvudhzbxaaiq,"Jackie Young",Laces,Rose,12,1,0,1,3,2,0,0,2,16,2025-02-01,4,12,4,7,2,3
+zvudhzbxaaiq,"Kahleah Copper",Rose,Laces,13,8,1,7,0,0,1,2,4,21,2025-02-01,8,14,1,2,2,4
+zvudhzbxaaiq,"Kate Martin",Laces,Rose,12,6,1,5,0,1,0,0,1,8,2025-02-01,3,11,0,5,1,1
+zvudhzbxaaiq,"Kayla Mcbride",Laces,Rose,15,6,1,5,2,0,0,0,5,20,2025-02-01,7,15,2,7,3,4
+zvudhzbxaaiq,"Lexie Hull",Rose,Laces,12,3,1,2,3,0,0,1,5,5,2025-02-01,2,7,1,3,0,0
+zvudhzbxaaiq,"Natisha Hiedeman",Laces,Rose,0,0,0,0,0,0,0,0,0,0,2025-02-01,0,0,0,0,0,0
+zvudhzbxaaiq,"Stefanie Dolson",Laces,Rose,13,4,0,4,1,0,3,1,6,11,2025-02-01,4,7,1,2,1,1
+zvudhzbxaaiq,"Tiffany Hayes",Laces,Rose,8,2,0,2,2,1,0,0,1,14,2025-02-01,4,9,0,1,3,3

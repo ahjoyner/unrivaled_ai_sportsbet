@@ -1,0 +1,30 @@
+player_id,name,team,position,gp,min,pts,offensive_rebounds,defensive_rebounds,reb,ast,stl,blk,turnovers,pf,headshot_url
+224445,"Jackie Young",Laces,G,1,7,12,0,2,2,3,0,0,0,4,NULL
+224446,"Tiffany Hayes",Laces,G,5,14,19.4,1.2,5.2,6.4,4,1.4,0,2.4,3.8,NULL
+224447,"Kayla McBride",Laces,G,5,20.6,25.6,0.6,6.2,6.8,3.2,1.2,0,2.4,1.4,NULL
+224449,"Kate Martin",Laces,G,4,9.8,10,0.8,4.3,5,1.3,1.5,0,1,2.5,NULL
+224450,"Stefanie Dolson",Laces,F,5,14.6,9.8,1.2,3.6,4.8,1.4,0,0.6,1.4,1.8,NULL
+224451,"Napheesa Collier","Lunar Owls",F,8,17.5,29.3,1.1,10.4,11.5,3.1,1.9,0.9,1.5,3.9,https://pub-ad8cc693759b4b55a181a76af041efa0.r2.dev/players/napheesa-collier/images/lunar-owls-headshot.jpg?v=1738721238937
+224452,"Courtney Williams","Lunar Owls",G,8,8.4,10.3,0.1,3.5,3.6,4.8,0.4,0.1,0.5,1.8,https://pub-ad8cc693759b4b55a181a76af041efa0.r2.dev/players/courtney-williams/images/lunar-owls-headshot.jpg?v=1738721238937
+224453,"Skylar Diggins-Smith","Lunar Owls",G,8,11.5,15.4,0.9,1.5,2.4,4.1,1.8,0.1,1.1,3.5,https://pub-ad8cc693759b4b55a181a76af041efa0.r2.dev/players/skylar-diggins-smith/images/lunar-owls-headshot.jpg?v=1738721238937
+224454,"Allisha Gray","Lunar Owls",G,8,14.6,19.5,0.9,5.1,6,2.9,0.9,0.1,1.5,3.6,https://pub-ad8cc693759b4b55a181a76af041efa0.r2.dev/players/allisha-gray/images/lunar-owls-headshot.jpg?v=1738721238937
+224457,"Breanna Stewart",Mist,F,8,14.9,18.4,1,10.4,11.4,2.8,1.3,1,1.6,2.1,https://pub-ad8cc693759b4b55a181a76af041efa0.r2.dev/players/breanna-stewart/images/mist-headshot.jpg?v=1738721238937
+224458,"DiJonai Carrington",Mist,G,5,7,7.2,0.4,3.8,4.2,1.8,1,0.4,1.6,2.2,https://pub-ad8cc693759b4b55a181a76af041efa0.r2.dev/players/dijonai-carrington/images/mist-headshot.jpg?v=1738721238937
+224459,"Courtney Vandersloot",Mist,G,4,10,8.3,1.3,3.8,5,2.3,0.5,0.3,1.5,2,NULL
+224461,"Jewell Loyd",Mist,G,7,11.7,14.3,1.1,2,3.1,2.6,0.6,0.3,1.9,2.1,https://pub-ad8cc693759b4b55a181a76af041efa0.r2.dev/players/jewell-loyd/images/mist-headshot.jpg?v=1738721238937
+224463,"Aaliyah Edwards",Mist,F,4,7,8,1.8,3,4.8,1,0.5,0.5,1,1.5,NULL
+224464,"Rickea Jackson",Mist,G,8,12.4,15,0.8,3,3.8,0.9,0.4,0.3,1.4,2.5,https://pub-ad8cc693759b4b55a181a76af041efa0.r2.dev/players/rickea-jackson/images/mist-headshot.jpg?v=1738721238937
+224465,"Satou Sabally",Phantom,F,6,15.3,17.7,1,5,6,2.2,0.7,0,3.5,3.5,NULL
+224467,"Brittney Griner",Phantom,F,6,15.8,15.2,0.5,5.7,6.2,1,0.2,1,1.2,1.8,NULL
+224468,"Natasha Cloud",Phantom,G,6,12.5,8.2,0.5,5.2,5.7,4.5,0.3,0.2,2.2,2.2,NULL
+224470,"Sabrina Ionescu",Phantom,G,4,21.3,19,0.8,5.5,6.3,6.3,0.5,0.8,1.8,1.3,NULL
+224471,"Angel Reese",Rose,F,6,10.8,9.8,2.7,6.5,9.2,1.8,0.7,0.5,2.3,3.7,NULL
+224472,"Chelsea Gray",Rose,G,6,14.7,16.3,0.7,4,4.7,6.2,0.8,0.2,2.2,2,NULL
+224473,"Brittney Sykes",Rose,G,4,10,10,1,1.8,2.8,1.8,0.5,0,1.3,3,NULL
+224474,"Kahleah Copper",Rose,G,6,13,15.8,0.8,5.3,6.2,0.5,0.7,0.2,1.7,3,NULL
+224475,"Azurá Stevens",Rose,F,6,9.8,14.3,1.8,4.7,6.5,0.8,0.3,0.3,0.3,2,NULL
+224477,"Arike Ogunbowale",Vinyl,G,5,13.2,13.2,0.2,3.4,3.6,4.6,0.8,0.4,0.6,2,NULL
+224478,"Rae Burrell",Vinyl,G,4,7,9,0.8,1.3,2,0.8,0.5,0.5,1,0.5,NULL
+224479,"Rhyne Howard",Vinyl,G,5,13.4,16.2,1,4.4,5.4,2.2,1,0.6,1.2,2.4,NULL
+224480,"Aliyah Boston",Vinyl,F,4,10,8.8,2.5,3.8,6.3,1,0.3,0.3,0.5,2.3,NULL
+224482,"Dearica Hamby",Vinyl,F,4,13,23,2.3,8,10.3,2.8,2,0.5,3,3.8,NULL

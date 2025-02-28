@@ -1,0 +1,46 @@
+# Ignore the secrets folder
+secrets/
+
+# Ignore Python compiled files
+data/unrivaled/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore Virtual Environments
+venv/
+env/
+.virtualenv/
+
+# Ignore IDE and editor settings
+.vscode/
+.idea/
+*.swp
+
+# Ignore log files
+*.log
+logs/
+
+# Ignore dependency files
+node_modules/
+package-lock.json
+yarn.lock
+pip-log.txt
+poetry.lock
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore environment files
+.env
+.env.local
+.env.*.local
+*.env
+
+# Ignore Firebase service keys
+firebase_key.json
+
+# Ignore database files
+*.sqlite3
+*.db
