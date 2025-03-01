@@ -290,7 +290,7 @@ export default function Home() {
       <header className="fixed top-0 left-0 w-full bg-gray-800 py-4 shadow-lg z-50">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <h1 className="text-3xl font-bold text-white flex items-center">
-            <img src="./logo.jpg" alt="MODUEL Logo" className="h-10 mr-2" />
+            <img src="/logo.jpg" alt="MODUEL Logo" className="h-10 mr-2" />
             MODUEL Prop Confidence
           </h1>
           <input
