@@ -103,8 +103,6 @@ def scrape_player_game_stats(player_url):
     rows = tbody.find_all("tr")
     for row in rows:
         cols = row.find_all("td")
-        if len(cols) < 15:
-            continue
 
         game_link = cols[0].find("a")["href"]
         game_id = game_link.split("/game/")[1]
