@@ -81,10 +81,15 @@ def extract_player(play_desc, player_stats):
     return None
 
 def insert_play_by_play_into_firestore(play_by_play_df, db):
+    index = 0
     for _, row in play_by_play_df.iterrows():
         game_id = str(row["game_id"])
-        event_id = f"{row['quarter']}_{row['time'].replace(':', '')}"  # Unique event ID
+        if row['quarter'] == "Q4":
+            event_id = f"{row['quarter']}_{index}"  # Unique event ID
+        else:
+            event_id = f"{row['quarter']}_{row['time'].replace(':', '')}"  # Unique event ID
 
         db.collection("games").document(game_id).collection("play_by_play").document(event_id).set(row.to_dict())
+        index += 1
 
     print(f"✅ Uploaded {len(play_by_play_df)} play-by-play events to Firestore.")

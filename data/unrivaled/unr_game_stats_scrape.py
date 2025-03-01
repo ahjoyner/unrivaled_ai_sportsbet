@@ -109,10 +109,19 @@ def scrape_game_stats(game_url, game_id, game_date):
     return pd.DataFrame(players_stats, columns=columns), game_metadata
 
 def insert_game_metadata_into_firestore(game_metadata):
-    """Insert game metadata into Firestore."""
+    """Insert game metadata into Firestore under games/{game_id}."""
     game_id, game_date, home_team, away_team, home_team_pts, away_team_pts = game_metadata
 
-    db.collection("games").document(game_id).set({
+    # Check if the game metadata already exists
+    game_ref = db.collection("games").document(game_id)
+    game_doc = game_ref.get()
+
+    if game_doc.exists:
+        print(f"⏩ Game metadata for game_id: {game_id} already exists in Firestore. Skipping...")
+        return  # Skip if the game metadata already exists
+
+    # Insert the game metadata into Firestore
+    game_ref.set({
         "game_date": game_date,
         "home_team": home_team,
         "away_team": away_team,
@@ -120,18 +129,29 @@ def insert_game_metadata_into_firestore(game_metadata):
         "away_team_score": away_team_pts
     }, merge=True)
     
-    print(f"Inserted/Updated game metadata for game_id: {game_id}")
+    print(f"✅ Inserted/Updated game metadata for game_id: {game_id}")
 
 def insert_game_stats_into_firestore(game_stats_df):
-    """Insert player game stats into Firestore."""
+    """Insert player game stats into Firestore under players/{player_name}/games/{game_id}."""
     for _, row in game_stats_df.iterrows():
         player_name = row["player_name"]
         game_id = row["game_id"]
 
-        game_stats = row.to_dict()
-        del game_stats["player_name"]
+        # Check if the game stats already exist for this player
+        game_stats_ref = db.collection("players").document(player_name).collection("games").document(game_id)
+        game_stats_doc = game_stats_ref.get()
 
-        db.collection("players").document(player_name).collection("games").document(game_id).set(game_stats)
+        if game_stats_doc.exists:
+            print(f"⏩ Game stats for player {player_name} (game_id: {game_id}) already exist in Firestore. Skipping...")
+            continue  # Skip if the game stats already exist
+
+        # Prepare the game stats data
+        game_stats = row.to_dict()
+        del game_stats["player_name"]  # Remove the player_name field since it's already in the document path
+
+        # Insert the game stats into Firestore
+        game_stats_ref.set(game_stats)
+        print(f"✅ Inserted/Updated game stats for player {player_name} (game_id: {game_id})")
 
     print(f"Inserted/Updated {len(game_stats_df)} records into Firestore.")
 
@@ -141,6 +161,14 @@ def scrape_and_store_all_games():
     all_game_stats = []
 
     for game_link, game_id, game_date in game_data:
+        # Check if the game already exists in Firestore
+        game_ref = db.collection("games").document(game_id)
+        game_doc = game_ref.get()
+
+        if game_doc.exists:
+            print(f"⏩ Game {game_id} already exists in Firestore. Skipping...")
+            continue  # Skip this game if it already exists
+
         print(f"🔄 Scraping game stats from: {game_link} (Date: {game_date})")
         game_stats_df, game_metadata = scrape_game_stats(game_link, game_id, game_date)
 
@@ -159,15 +187,47 @@ def scrape_and_store_all_games():
         final_df.to_csv("data/unrivaled/csv/unrivaled_game_stats.csv", index=False)
         print("✅ Game stats saved to CSV and Firestore.")
     else:
-        print("⚠ No game stats were scraped.")
+        print("⚠ No new game stats were scraped.")
 
 def insert_play_by_play_into_firestore(game_id, play_by_play_df):
-    """Insert play-by-play data into Firestore."""
+    """Insert play-by-play data into Firestore with proper event_id sorting."""
+    q4_index = 0  # Incremental index for Q4 events
+
     for _, row in play_by_play_df.iterrows():
-        event_id = f"{row['quarter']}_{row['time'].replace(':', '')}"
+        quarter = row["quarter"]
+        time = row["time"]
+
+        # Skip rows with empty or invalid time
+        if not time or time.strip() == "":
+            print(f"⚠ Skipping row with empty time: {row}")
+            continue
+
+        if quarter == "Q4":
+            # For Q4, use an incremental index since it's untimed
+            event_id = f"{quarter}_{q4_index:04d}"  # Pad with leading zeros for consistent sorting
+            q4_index += 1  # Increment the index for the next Q4 event
+        else:
+            # Handle both "MM:SS" and "0:SS.S" time formats
+            if ":" in time:
+                # Split into minutes and seconds
+                minutes, seconds = time.split(':')
+                # Handle seconds with milliseconds (e.g., "58.9")
+                seconds = seconds.split('.')[0]  # Ignore milliseconds
+                total_seconds = int(minutes) * 60 + int(seconds)
+            else:
+                # Handle "SS.S" format (e.g., "58.9")
+                try:
+                    total_seconds = int(float(time))  # Convert to total seconds
+                except ValueError:
+                    print(f"⚠ Skipping row with invalid time format: {time}")
+                    continue
+
+            event_id = f"{quarter}_{total_seconds:04d}"  # Pad with leading zeros for consistent sorting
+
+        # Insert the play-by-play event into Firestore
         db.collection("games").document(game_id).collection("play_by_play").document(event_id).set(row.to_dict())
 
-    print(f"✅ Inserted {len(play_by_play_df)} play-by-play records for game_id: {game_id}")
+    print(f"✅ Uploaded {len(play_by_play_df)} play-by-play events to Firestore.")
 
 if __name__ == "__main__":
     scrape_and_store_all_games()

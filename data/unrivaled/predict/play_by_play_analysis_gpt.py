@@ -8,6 +8,11 @@ import sys
 import openai
 from math import comb
 from collections import defaultdict
+from datetime import datetime
+from dotenv import load_dotenv
+import os
+
+load_dotenv(".env.local")
 
 # --- Celery Configuration ---
 from celery import Celery
@@ -20,26 +25,23 @@ cred = credentials.Certificate("secrets/firebase_key.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client(database_id="unrivaled-db")
 
-# MySQL Database Configuration
-DB_CONFIG = {
-    "host": "localhost",
-    "database": "unrivaled",  # Replace with your database name
-    "user": "root",          # Replace with your MySQL username
-    "password": "Joynera4919"       # Replace with your MySQL password
-}
-
-# Load API key from secrets file
-with open("secrets/API_KEYS.json", "r") as file:
-    api_keys = json.load(file)
-
 # GPT-4 API Settings (replacing GPT)
-GPT_API_KEY = api_keys["GPT_API_KEY"]
+GPT_API_KEY = os.getenv("GPT_API_KEY")
 GPT_MODEL = "gpt-4o-mini"
 GPT_API_URL = "https://api.openai.com/v1/chat/completions"
 
-DEEPSEEK_API_KEY = api_keys["DEEPSEEK_API_KEY"]
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 DEEPSEEK_MODEL = "deepseek-chat"
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
+
+def get_current_analysis(player_name):
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    analysis_ref = db.collection("analysis_results").document(player_name).get()
+    if analysis_ref.exists:
+        analysis_data = analysis_ref.to_dict()
+        if analysis_data["date_fetched"] == current_date:
+            return analysis_data
+    return None
 
 def get_player_teams():
     player_teams = {}
@@ -64,30 +66,17 @@ def fetch_injury_reports():
         print(f"Error fetching injury reports: {e}", file=sys.stderr)
         return []
 
-
 def fetch_plays_from_db(game_id, player_name):
     plays_ref = db.collection("games").document(game_id).collection("play_by_play").stream()
     plays = [doc.to_dict() for doc in plays_ref if doc.to_dict().get("player", "").lower() == player_name.lower()]
     return plays
 
 def get_game_ids_for_player(player_name):
-    try:
-        connection = mysql.connector.connect(**DB_CONFIG)
-        if connection.is_connected():
-            cursor = connection.cursor(dictionary=True)
-            query = """
-                SELECT DISTINCT game_id FROM play_by_play
-                WHERE LOWER(player) = LOWER(%s)
-            """
-            cursor.execute(query, (player_name,))
-            game_ids = [row["game_id"] for row in cursor.fetchall()]
-            return game_ids
-    except Error as e:
-        print(f"Error fetching game IDs from MySQL: {e}", file=sys.stderr)
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
+    player_doc = db.collection("players").document(player_name).get()
+    if player_doc.exists:
+        player_data = player_doc.to_dict()
+        return player_data.get("player_data", {}).get("games", [])
+    return []
 
 def player_scoring_breakdown(plays):
     scoring_data = {
@@ -115,31 +104,14 @@ def player_scoring_breakdown(plays):
     return scoring_data
 
 def get_assists_rebounds(game_id, player_name):
-    try:
-        connection = mysql.connector.connect(**DB_CONFIG)
-        if connection.is_connected():
-            cursor = connection.cursor(dictionary=True)
-            query = """
-                SELECT ast, offensive_rebounds, defensive_rebounds 
-                FROM game_stats
-                WHERE game_id = %s AND LOWER(player_name) = LOWER(%s)
-            """
-            cursor.execute(query, (game_id, player_name))
-            result = cursor.fetchone()
-            if result:
-                return {
-                    "assists": result["ast"],
-                    "offensive_rebounds": result["offensive_rebounds"],
-                    "defensive_rebounds": result["defensive_rebounds"]
-                }
-            else:
-                return {"assists": 0, "offensive_rebounds": 0, "defensive_rebounds": 0}
-    except mysql.connector.Error as e:
-        print(f"Error fetching assists and rebounds: {e}", file=sys.stderr)
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
+    game_stats_ref = db.collection("players").document(player_name).collection("games").document(game_id).get()
+    if game_stats_ref.exists:
+        game_stats = game_stats_ref.to_dict()
+        return {
+            "assists": game_stats.get("ast", 0),
+            "offensive_rebounds": game_stats.get("offensive_rebounds", 0),
+            "defensive_rebounds": game_stats.get("defensive_rebounds", 0)
+        }
     return {"assists": 0, "offensive_rebounds": 0, "defensive_rebounds": 0}
 
 def turnover_foul_analysis(plays):
@@ -177,11 +149,9 @@ def get_player_averages(player_name):
     player_doc = db.collection("players").document(player_name).get()
     return player_doc.to_dict() if player_doc.exists else None
 
-
 def get_game_stats(game_id, player_name):
     game_stats_ref = db.collection("players").document(player_name).collection("games").document(game_id).get()
     return game_stats_ref.to_dict() if game_stats_ref.exists else None
-
 
 def get_opposing_team_stats(game_id, player_team):
     game_doc = db.collection("games").document(game_id).get()
@@ -191,7 +161,6 @@ def get_opposing_team_stats(game_id, player_team):
         opposing_team_stats = db.collection("teams").document(opposing_team).get()
         return opposing_team_stats.to_dict() if opposing_team_stats.exists else None
     return None
-
 
 async def analyze_game_flow(session, player_name, game_id, max_retries=3):
     headers = {
@@ -436,7 +405,6 @@ async def analyze_player_with_semaphore(semaphore, player, player_teams):
     async with semaphore:
         return await analyze_player(player, player_teams)
 
-# Add this function to handle database operations for analysis results
 def save_analysis_results(player_name, confidence_level, reason):
     try:
         reason_1 = reason.get("1", "")
@@ -444,29 +412,27 @@ def save_analysis_results(player_name, confidence_level, reason):
         reason_3 = reason.get("3", "")
         reason_4 = reason.get("4", "")
         final_conclusion = reason.get("5", "")
-        # Create a new connection for each call
-        connection = mysql.connector.connect(**DB_CONFIG)
-        if connection.is_connected():
-            cursor = connection.cursor()
-            # Delete existing rows for the player
-            delete_query = "DELETE FROM analysis_results WHERE player_name = %s"
-            cursor.execute(delete_query, (player_name,))
-            # Insert new analysis results
-            insert_query = """
-                INSERT INTO analysis_results (player_name, confidence_level, reason_1, reason_2, reason_3, reason_4, final_conclusion)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """
-            cursor.execute(insert_query, (player_name, confidence_level, reason_1, reason_2, reason_3, reason_4, final_conclusion))
-            connection.commit()
-            print(f"Saved analysis results for {player_name} to database.", file=sys.stderr)
-    except mysql.connector.Error as e:
-        print(f"Error saving analysis results to database for {player_name}: {e}", file=sys.stderr)
-    finally:
-        if connection.is_connected():
-            cursor.close()
-            connection.close()
+        
+        # Get the current date
+        current_date = datetime.now().strftime("%Y-%m-%d")
+        
+        # Save the analysis results to Firebase
+        analysis_data = {
+            "confidence_level": confidence_level,
+            "reason_1": reason_1,
+            "reason_2": reason_2,
+            "reason_3": reason_3,
+            "reason_4": reason_4,
+            "final_conclusion": final_conclusion,
+            "date_fetched": current_date
+        }
+        
+        # Save to the analysis_results collection in Firebase
+        db.collection("analysis_results").document(player_name).set(analysis_data)
+        print(f"Saved analysis results for {player_name} to Firebase.", file=sys.stderr)
+    except Exception as e:
+        print(f"Error saving analysis results to Firebase for {player_name}: {e}", file=sys.stderr)
 
-# Modify the analyze_player function to save results to the database
 async def analyze_player(player, player_teams):
     player_name = player["Player Data"]["name"]
     player_team = player_teams.get(player_name.lower())
@@ -640,8 +606,23 @@ def calculate_shooting_probabilities(player_name):
     return None
 
 async def main():
-    with open("/Users/ajoyner/unrivaled_ai_sportsbet/data/unrivaled/unr_enriched_players.json", "r") as f:
-        enriched_data = json.load(f)
+    # Fetch player data from prop_lines collection
+    prop_lines_ref = db.collection("prop_lines").stream()
+    enriched_data = []
+    for doc in prop_lines_ref:
+        player_data = doc.to_dict()
+        enriched_data.append({
+            "Player Data": {
+                "name": player_data.get("player_data", {}).get("display_name", ""),
+                # Add other player data fields as needed
+            },
+            "Projection Data": {
+                "line_score": player_data.get("player_data", {}).get("line_score", 0),
+                "description": player_data.get("player_data", {}).get("description", ""),
+                # Add other projection data fields as needed
+            }
+        })
+
     player_teams = get_player_teams()
     semaphore = asyncio.Semaphore(4)  # Increased concurrency
     tasks = [analyze_player_with_semaphore(semaphore, player, player_teams) for player in enriched_data]
@@ -651,14 +632,11 @@ async def main():
         player_name = player["Player Data"]["name"]
         if result:
             confidence_level, reason = result
-            # save_analysis_results(player_name, confidence_level, reason)
+            save_analysis_results(player_name, confidence_level, reason)
             output[player_name] = {"confidence": confidence_level, "reason": reason}
         else:
             output[player_name] = {"confidence": 75, "reason": "No analysis available."}
     # Print only the final JSON result to stdout.
-    for player_name, analysis in output.items():
-        save_analysis_results(player_name, analysis["confidence"], analysis["reason"])
-
     print(json.dumps(output))
     return output
 

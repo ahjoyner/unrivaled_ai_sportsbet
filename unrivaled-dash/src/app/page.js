@@ -14,7 +14,20 @@ import {
   Legend,
 } from "chart.js";
 import { db } from "./firebase.js";
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { 
+  collection, 
+  getDocs, 
+  doc, 
+  getDoc,
+  query, 
+  orderBy, 
+  limit 
+} from "firebase/firestore";
+
+// Utility function to normalize names
+const normalizeName = (name) => {
+  return name.toLowerCase().replace(/ /g, "_"); // Replace spaces with underscores
+};
 
 const cleanReasonText = (text) => {
   return text.replace(/^\*\*.*:\*\*\s*/, "").replace(/^\*\*.*\*\*:\s*/, "");
@@ -55,6 +68,7 @@ export default function Home() {
   );
 
   // Fetch players and their prop lines from Firestore
+  // Fetch players and their prop lines from Firestore
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
@@ -66,34 +80,53 @@ export default function Home() {
         const playersCollection = collection(db, "players");
         const playersSnapshot = await getDocs(playersCollection);
 
-        // Create a map of players by name (document ID) for quick lookup
+        // Create a map of players by normalized name for quick lookup
         const playersMap = new Map();
-        playersSnapshot.docs.forEach((doc) => {
-          const playerData = doc.data();
-          playersMap.set(doc.id, { // Use doc.id (name) as the key
+        playersSnapshot.docs.forEach((playerDoc) => {
+          const playerData = playerDoc.data();
+          const normalizedName = normalizeName(playerDoc.id); // Normalize the player name
+          playersMap.set(normalizedName, {
             headshot_url: playerData.headshot_url || null,
           });
         });
 
         // Map through prop_lines and merge with player data
-        const playerProjections = propLinesSnapshot.docs.map((doc) => {
-          const propLineData = doc.data();
-          const playerData = propLineData.player_data;
-          const projectionData = propLineData.projection_data;
+        const playerProjections = await Promise.all(
+          propLinesSnapshot.docs.map(async (propLineDoc) => {
+            const propLineData = propLineDoc.data();
+            const playerData = propLineData.player_data;
+            const projectionData = propLineData.projection_data;
 
-          // Find the matching player in the players collection using the name (document ID)
-          const playerInfo = playersMap.get(playerData.display_name) || {};
+            // Normalize the player name for comparison
+            const normalizedName = normalizeName(playerData.display_name);
+            const playerInfo = playersMap.get(normalizedName) || {};
 
-          return {
-            id: doc.id, // This is the player_id from prop_lines
-            displayName: playerData.display_name || "Unknown Player",
-            team: playerData.team || "Unknown Team",
-            position: playerData.position || "N/A",
-            headshot_url: playerInfo.headshot_url || null, // Get headshot_url from players collection
-            prop_line: projectionData.line_score || 0,
-            stat_type: projectionData.stat_type || "Points",
-          };
-        });
+            // Fetch analysis results for the player from players/{player_name}/analysis_results/{game_id}
+            const playerNameFirestore = playerData.display_name.replace(/ /g, "_");
+            const analysisDocRef = doc(db, `players/${playerNameFirestore}/analysis_results`, propLineDoc.id); // Use propLineDoc.id (game_id) as the document ID
+            const analysisSnapshot = await getDoc(analysisDocRef);
+            const analysisData = analysisSnapshot.exists() ? analysisSnapshot.data() : {};
+
+            return {
+              id: propLineDoc.id, // This is the game_id from prop_lines
+              displayName: playerData.display_name || "Unknown Player",
+              normalizedName: normalizedName, // Store normalized name for filtering
+              team: playerData.team || "Unknown Team",
+              position: playerData.position || "N/A",
+              headshot_url: playerInfo.headshot_url || null, // Get headshot_url from players collection
+              prop_line: projectionData.line_score || 0,
+              stat_type: projectionData.stat_type || "Points",
+              confidence_level: analysisData.confidence_level || 0, // Default to 0 if not found
+              reason: analysisData.reason || { // Default to empty object if not found
+                "1": "",
+                "2": "",
+                "3": "",
+                "4": "",
+                "5": "",
+              },
+            };
+          })
+        );
 
         setPlayers(playerProjections);
         setFilteredPlayers(playerProjections);
@@ -115,7 +148,8 @@ export default function Home() {
       let updatedResults = {};
       for (const player of players) {
         try {
-          const analysisDoc = doc(db, "analysis_results", player.id);
+          const playerNameFirestore = player.displayName.replace(/ /g, "_");
+          const analysisDoc = doc(db, `players/${playerNameFirestore}/analysis_results`, player.id);
           const analysisSnapshot = await getDoc(analysisDoc);
           if (analysisSnapshot.exists()) {
             updatedResults[player.id] = analysisSnapshot.data();
@@ -134,14 +168,38 @@ export default function Home() {
   // Fetch last 5 games from Firestore
   const openLast5GamesModal = async (player) => {
     try {
-      const gamesCollection = collection(db, "games");
-      const gamesSnapshot = await getDocs(gamesCollection);
-      const gamesData = gamesSnapshot.docs
-        .map((doc) => doc.data())
-        .filter((game) => game.player_name === player.displayName)
-        .slice(-5); // Get last 5 games
-
-      console.log("Fetched last 5 games for", player.displayName, gamesData);
+      // Replace spaces with underscores in the player name
+      const playerNameFirestore = player.displayName.replace(/ /g, "_");
+  
+      // Fetch the most recent 5 games for the player from players/{player_name}/games
+      const gamesCollection = collection(db, `players/${playerNameFirestore}/games`);
+      console.log(`Querying collection: players/${playerNameFirestore}/games`);
+  
+      // Query to get the most recent 5 games sorted by game_date in descending order
+      const gamesQuery = query(
+        gamesCollection,
+        orderBy("game_date", "desc"), // Sort by game_date in descending order
+        limit(5) // Limit to 5 most recent games
+      );
+  
+      const gamesSnapshot = await getDocs(gamesQuery);
+      console.log("Games Snapshot:", gamesSnapshot); // Debugging: Log the snapshot
+  
+      if (gamesSnapshot.empty) {
+        console.log("No games found for player:", playerNameFirestore);
+        return;
+      }
+  
+      const gamesData = gamesSnapshot.docs.map((doc) => {
+        const gameData = doc.data();
+        console.log("Game Data:", gameData); // Debugging: Log each game's data
+        return {
+          game_id: doc.id,
+          ...gameData, // This includes the stats field
+        };
+      });
+  
+      console.log("Fetched last 5 games for", playerNameFirestore, gamesData);
       setLast5GamesModal({ ...player, last_5_games: gamesData });
     } catch (error) {
       console.error("Error fetching last 5 games:", error);
@@ -151,10 +209,37 @@ export default function Home() {
   // Fetch game stats from Firestore
   const fetchGameStats = async (gameId, playerName) => {
     try {
-      const gameDoc = doc(db, "games", gameId);
-      const gameSnapshot = await getDoc(gameDoc);
-      if (gameSnapshot.exists()) {
-        setGameStatsModal(gameSnapshot.data());
+      // Replace spaces with underscores in the player name
+      const playerNameFirestore = playerName.replace(/ /g, "_");
+  
+      // Fetch game stats from players/{player_name}/games/{game_id}
+      const gameStatsRef = doc(db, `players/${playerNameFirestore}/games/${gameId}`);
+      const gameStatsDoc = await getDoc(gameStatsRef);
+  
+      if (gameStatsDoc.exists()) {
+        const gameStats = gameStatsDoc.data();
+        console.log("Game Stats:", gameStats); // Debugging: Log game stats
+  
+        // Fetch game metadata (date, opponent, etc.) from the root games collection
+        const gameMetadataRef = doc(db, "games", gameId);
+        const gameMetadataDoc = await getDoc(gameMetadataRef);
+  
+        if (gameMetadataDoc.exists()) {
+          const gameMetadata = gameMetadataDoc.data();
+          console.log("Game Metadata:", gameMetadata); // Debugging: Log game metadata
+  
+          // Merge player stats with game metadata
+          setGameStatsModal({
+            ...gameStats, // Player-specific stats
+            ...gameMetadata, // Game metadata (date, opponent, etc.)
+            player_name: playerName,
+            game_id: gameId,
+          });
+        } else {
+          console.error("Game metadata not found for game_id:", gameId);
+        }
+      } else {
+        console.error("Game stats not found for player:", playerName, "game_id:", gameId);
       }
     } catch (error) {
       console.error("Error fetching game stats:", error);
@@ -163,8 +248,9 @@ export default function Home() {
 
   // Filter players based on search query
   useEffect(() => {
+    const normalizedQuery = normalizeName(searchQuery); // Normalize the search query
     const filtered = players.filter((player) =>
-      player.displayName.toLowerCase().includes(searchQuery.toLowerCase())
+      player.normalizedName.includes(normalizedQuery) // Compare normalized names
     );
     setFilteredPlayers(filtered);
   }, [searchQuery, players]);
@@ -204,11 +290,11 @@ export default function Home() {
       <header className="fixed top-0 left-0 w-full bg-gray-800 py-4 shadow-lg z-50">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <h1 className="text-3xl font-bold text-white flex items-center">
-            <img src="/logo.jpg" alt="MODUEL Logo" className="h-10 mr-2" />
+            <img src="./logo.jpg" alt="MODUEL Logo" className="h-10 mr-2" />
             MODUEL Prop Confidence
           </h1>
           <input
-            type="text"
+            type="text" 
             placeholder="Search players..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -217,73 +303,65 @@ export default function Home() {
         </div>
       </header>
       <div className="container mx-auto p-8 pt-24 relative z-10">
-        <h2 className="text-2xl font-bold text-white mb-6">Players</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {filteredPlayers.map((player, index) => {
-            const analysis = confidenceData[player.id] || {};
-            const confidence = analysis.confidence_level || 0;
-            const confidenceColor = confidence >= 70 ? "bg-gradient-to-r from-green-400 to-blue-500" : "bg-gradient-to-r from-red-400 to-pink-500";
-            return (
-              <div key={index} className="bg-gray-800 rounded-lg p-6 text-center shadow-lg relative hover:shadow-xl transition-shadow">
-                <button
-                  className="absolute top-2 right-2 bg-gray-700 text-white px-2 py-1 rounded-lg hover:bg-gray-600 transition-colors"
-                  onClick={() => openLast5GamesModal(player)}
-                >
-                  L5
-                </button>
-                <div className="w-32 h-32 bg-gray-700 rounded-full mx-auto mb-4 overflow-hidden">
-                  {player.headshot_url ? (
-                    <img
-                      src={player.headshot_url}
-                      alt={player.displayName}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gray-700"></div>
-                  )}
-                </div>
-                <p className="text-gray-400 text-sm">
-                  {player.team} - {player.position}
-                </p>
-                <p className="text-white text-xl font-semibold mt-2">{player.displayName}</p>
-                <p className="text-white text-2xl font-bold mt-4">
-                  {player.prop_line} <span className="text-sm text-gray-400">points</span>
-                </p>
-                <div className="mt-6">
-                  <div className="w-full bg-gray-700 rounded-full h-2.5">
-                    <div
-                      className={`h-2.5 rounded-full ${confidenceColor}`}
-                      style={{
-                        width: `${(confidence / 100) * 100}%`,
-                        transition: "width 0.5s ease-in-out",
-                      }}
-                    ></div>
-                  </div>
-                  <div className="flex justify-between text-gray-400 text-sm mt-2">
-                    <span>0</span>
-                    <span>100</span>
-                  </div>
-                </div>
-                <button
-                  className="mt-4 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors w-full"
-                  onClick={() =>
-                    setSelectedPlayer({
-                      ...player,
-                      reason: {
-                        "1": analysis.reason_1 || "",
-                        "2": analysis.reason_2 || "",
-                        "3": analysis.reason_3 || "",
-                        "4": analysis.reason_4 || "",
-                        "5": analysis.final_conclusion || "",
-                      },
-                    })
-                  }
-                >
-                  <b>View Analysis</b>
-                </button>
+        {filteredPlayers.map((player, index) => {
+          const confidence = player.confidence_level || 0;
+          const confidenceColor = confidence >= 70 ? "bg-gradient-to-r from-green-400 to-blue-500" : "bg-gradient-to-r from-red-400 to-pink-500";
+          return (
+            <div key={index} className="bg-gray-800 rounded-lg p-6 text-center shadow-lg relative hover:shadow-xl transition-shadow">
+              <button
+                className="absolute top-2 right-2 bg-gray-700 text-white px-2 py-1 rounded-lg hover:bg-gray-600 transition-colors"
+                onClick={() => openLast5GamesModal(player)}
+              >
+                L5
+              </button>
+              <div className="w-32 h-32 bg-gray-700 rounded-full mx-auto mb-4 overflow-hidden">
+                {player.headshot_url ? (
+                  <img
+                    src={player.headshot_url}
+                    alt={player.displayName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-700"></div>
+                )}
               </div>
-            );
-          })}
+              <p className="text-gray-400 text-sm">
+                {player.team} - {player.position}
+              </p>
+              <p className="text-white text-xl font-semibold mt-2">{player.displayName}</p>
+              <p className="text-white text-2xl font-bold mt-4">
+                {player.prop_line} <span className="text-sm text-gray-400">points</span>
+              </p>
+              <div className="mt-6">
+                <div className="w-full bg-gray-700 rounded-full h-2.5">
+                  <div
+                    className={`h-2.5 rounded-full ${confidenceColor}`}
+                    style={{
+                      width: `${(confidence / 100) * 100}%`,
+                      transition: "width 0.5s ease-in-out",
+                    }}
+                  ></div>
+                </div>
+                <div className="flex justify-between text-gray-400 text-sm mt-2">
+                  <span>0</span>
+                  <span>100</span>
+                </div>
+              </div>
+              <button
+                className="mt-4 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors w-full"
+                onClick={() =>
+                  setSelectedPlayer({
+                    ...player,
+                    reason: player.reason, // Pass the reason map directly
+                  })
+                }
+              >
+                <b>View Analysis</b>
+              </button>
+            </div>
+          );
+        })}
         </div>
       </div>
       {selectedPlayer && (
@@ -303,7 +381,7 @@ export default function Home() {
                 <div className="flex flex-col items-center">
                   <span className="text-orange-400 text-lg font-semibold">Confidence</span>
                   <span className="text-white text-2xl font-bold">
-                    {confidenceData[selectedPlayer.id]?.confidence_level || 0}
+                    {selectedPlayer.confidence_level || 0}
                   </span>
                 </div>
                 <div className="flex flex-col items-center">
@@ -383,10 +461,28 @@ export default function Home() {
             </h2>
             {(() => {
               const games = last5GamesModal.last_5_games || [];
-              const labels = games.map((game) =>
-                new Date(game.game_date).toLocaleDateString()
-              );
-              const data = games.map((game) => Number(game.pts));
+
+              // Reverse the games array to display oldest to newest (left to right)
+              const reversedGames = [...games].reverse();
+
+              // Debugging: Log the fetched games
+              console.log("Fetched Games (Reversed):", reversedGames);
+
+              // Extract labels (dates) and data (points)
+              const labels = reversedGames.map((game) => {
+                if (game.game_date) {
+                  const gameDate = game.game_date.toDate ? game.game_date.toDate() : new Date(game.game_date);
+                  return gameDate.toLocaleDateString();
+                } else {
+                  return "No Date"; // Fallback for missing or invalid dates
+                }
+              });
+
+              const data = reversedGames.map((game) => Number(game.pts || 0)); // Fallback to 0 if pts is missing
+
+              // Debugging: Log the labels and data
+              console.log("Labels (Reversed):", labels);
+              console.log("Data (Reversed):", data);
 
               const chartData = {
                 labels: labels,
@@ -450,7 +546,7 @@ export default function Home() {
                 onClick: (event, elements) => {
                   if (elements.length > 0) {
                     const clickedIndex = elements[0].index;
-                    const clickedGame = last5GamesModal.last_5_games[clickedIndex];
+                    const clickedGame = reversedGames[clickedIndex]; // Use reversedGames for correct index
                     fetchGameStats(clickedGame.game_id, last5GamesModal.displayName);
                   }
                 },
@@ -472,83 +568,83 @@ export default function Home() {
         </div>
       )}
       {gameStatsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full">
-            <h2 className="text-2xl font-bold text-white mb-4">
-              🏀 Game Stats for {gameStatsModal.player_name} vs. {gameStatsModal.opponent}
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gray-700 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-orange-400 mb-3">Basic Stats</h3>
-                <div className="space-y-2">
-                  <StatItem label="Points" value={gameStatsModal.pts} icon="🔥" />
-                  <StatItem label="Rebounds" value={gameStatsModal.reb} icon="🏀" />
-                  <StatItem label="Assists" value={gameStatsModal.ast} icon="🎯" />
-                  <StatItem label="Steals" value={gameStatsModal.stl} icon="⛹️‍♀️" />
-                  <StatItem label="Blocks" value={gameStatsModal.blk} icon="🚫" />
-                  <StatItem label="Turnovers" value={gameStatsModal.turnovers} icon="🔄" />
-                  <StatItem label="Personal Fouls" value={gameStatsModal.pf} icon="⚠️" />
-                </div>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+              <div className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full">
+                  <h2 className="text-2xl font-bold text-white mb-4">
+                      🏀 Game Stats for {gameStatsModal.player_name} vs. {gameStatsModal.opponent}
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-gray-700 p-4 rounded-lg">
+                          <h3 className="text-lg font-semibold text-orange-400 mb-3">Basic Stats</h3>
+                          <div className="space-y-2">
+                              <StatItem label="Points" value={gameStatsModal.pts} icon="🔥" />
+                              <StatItem label="Rebounds" value={gameStatsModal.reb} icon="🏀" />
+                              <StatItem label="Assists" value={gameStatsModal.ast} icon="🎯" />
+                              <StatItem label="Steals" value={gameStatsModal.stl} icon="⛹️‍♀️" />
+                              <StatItem label="Blocks" value={gameStatsModal.blk} icon="🚫" />
+                              <StatItem label="Turnovers" value={gameStatsModal.turnovers} icon="🔄" />
+                              <StatItem label="Personal Fouls" value={gameStatsModal.pf} icon="⚠️" />
+                          </div>
+                      </div>
+                      <div className="bg-gray-700 p-4 rounded-lg">
+                          <h3 className="text-lg font-semibold text-orange-400 mb-3">Shooting Stats</h3>
+                          <div className="space-y-2">
+                              <StatItem 
+                                  label="Field Goals" 
+                                  value={{ made: gameStatsModal.fg_m, attempted: gameStatsModal.fg_a }}
+                                  isShootingStat
+                              />
+                              <StatItem
+                                  label="Field Goal %"
+                                  value={(
+                                      (gameStatsModal.fg_m / gameStatsModal.fg_a * 100).toFixed(1))
+                                  }
+                                  unit="%"
+                              />
+                              <StatItem 
+                                  label="3-Pointers" 
+                                  value={{ made: gameStatsModal.three_pt_m, attempted: gameStatsModal.three_pt_a }}
+                                  isShootingStat
+                              />
+                              <StatItem
+                                  label="3-Point %"
+                                  value={(
+                                      (gameStatsModal.three_pt_m / gameStatsModal.three_pt_a * 100).toFixed(1))
+                                  }
+                                  unit="%"
+                              />
+                              <StatItem 
+                                  label="Free Throws" 
+                                  value={{ made: gameStatsModal.ft_m, attempted: gameStatsModal.ft_a }}
+                                  isShootingStat
+                              />
+                              <StatItem
+                                  label="Free Throw %"
+                                  value={(
+                                      (gameStatsModal.ft_m / gameStatsModal.ft_a * 100).toFixed(1))
+                                  }
+                                  unit="%"
+                              />
+                          </div>
+                      </div>
+                      <div className="bg-gray-700 p-4 rounded-lg col-span-full">
+                          <h3 className="text-lg font-semibold text-orange-400 mb-3">Advanced Stats</h3>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              <StatItem label="Minutes Played" value={gameStatsModal.min} unit="min" />
+                              <StatItem label="Offensive Rebounds" value={gameStatsModal.offensive_rebounds} />
+                              <StatItem label="Defensive Rebounds" value={gameStatsModal.defensive_rebounds} />
+                              <StatItem label="Game Date" value={new Date(gameStatsModal.game_date).toLocaleDateString()} />
+                          </div>
+                      </div>
+                  </div>
+                  <button
+                      className="mt-6 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+                      onClick={() => setGameStatsModal(null)}
+                  >
+                      Close
+                  </button>
               </div>
-              <div className="bg-gray-700 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-orange-400 mb-3">Shooting Stats</h3>
-                <div className="space-y-2">
-                  <StatItem 
-                    label="Field Goals" 
-                    value={{ made: gameStatsModal.fg_m, attempted: gameStatsModal.fg_a }}
-                    isShootingStat
-                  />
-                  <StatItem
-                    label="Field Goal %"
-                    value={(
-                      (gameStatsModal.fg_m / gameStatsModal.fg_a * 100).toFixed(1))
-                    }
-                    unit="%"
-                  />
-                  <StatItem 
-                    label="3-Pointers" 
-                    value={{ made: gameStatsModal.three_pt_m, attempted: gameStatsModal.three_pt_a }}
-                    isShootingStat
-                  />
-                  <StatItem
-                    label="3-Point %"
-                    value={(
-                      (gameStatsModal.three_pt_m / gameStatsModal.three_pt_a * 100).toFixed(1))
-                    }
-                    unit="%"
-                  />
-                  <StatItem 
-                    label="Free Throws" 
-                    value={{ made: gameStatsModal.ft_m, attempted: gameStatsModal.ft_a }}
-                    isShootingStat
-                  />
-                  <StatItem
-                    label="Free Throw %"
-                    value={(
-                      (gameStatsModal.ft_m / gameStatsModal.ft_a * 100).toFixed(1))
-                    }
-                    unit="%"
-                  />
-                </div>
-              </div>
-              <div className="bg-gray-700 p-4 rounded-lg col-span-full">
-                <h3 className="text-lg font-semibold text-orange-400 mb-3">Advanced Stats</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <StatItem label="Minutes Played" value={gameStatsModal.min} unit="min" />
-                  <StatItem label="Offensive Rebounds" value={gameStatsModal.offensive_rebounds} />
-                  <StatItem label="Defensive Rebounds" value={gameStatsModal.defensive_rebounds} />
-                  <StatItem label="Game Date" value={new Date(gameStatsModal.game_date).toLocaleDateString()} />
-                </div>
-              </div>
-            </div>
-            <button
-              className="mt-6 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
-              onClick={() => setGameStatsModal(null)}
-            >
-              Close
-            </button>
           </div>
-        </div>
       )}
       <footer className="bg-gray-800 text-white py-6 mt-8">
         <div className="container mx-auto px-4 text-center">
