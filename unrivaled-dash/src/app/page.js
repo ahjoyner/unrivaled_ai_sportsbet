@@ -212,6 +212,18 @@ export default function Home() {
       // Replace spaces with underscores in the player name
       const playerNameFirestore = playerName.replace(/ /g, "_");
   
+      // Fetch the player's team from players/{player_name}/team
+      const playerRef = doc(db, `players/${playerNameFirestore}`);
+      const playerDoc = await getDoc(playerRef);
+  
+      if (!playerDoc.exists()) {
+        console.error("Player document not found:", playerNameFirestore);
+        return;
+      }
+  
+      const playerTeam = playerDoc.data().team; // Get the player's team
+      console.log("Player Team:", playerTeam); // Debugging: Log the player's team
+  
       // Fetch game stats from players/{player_name}/games/{game_id}
       const gameStatsRef = doc(db, `players/${playerNameFirestore}/games/${gameId}`);
       const gameStatsDoc = await getDoc(gameStatsRef);
@@ -228,12 +240,27 @@ export default function Home() {
           const gameMetadata = gameMetadataDoc.data();
           console.log("Game Metadata:", gameMetadata); // Debugging: Log game metadata
   
+          // Determine the opponent by checking which team is NOT the player's team
+          let opponent;
+          if (gameMetadata.home_team === playerTeam) {
+            opponent = gameMetadata.away_team;
+          } else if (gameMetadata.away_team === playerTeam) {
+            opponent = gameMetadata.home_team;
+          } else {
+            // Fallback: If the player's team doesn't match either team in the metadata, log an error
+            console.error(
+              "Player's team does not match home_team or away_team in game metadata."
+            );
+            opponent = "Unknown Opponent"; // Fallback value
+          }
+  
           // Merge player stats with game metadata
           setGameStatsModal({
             ...gameStats, // Player-specific stats
             ...gameMetadata, // Game metadata (date, opponent, etc.)
             player_name: playerName,
             game_id: gameId,
+            opponent: opponent, // Add the opponent dynamically
           });
         } else {
           console.error("Game metadata not found for game_id:", gameId);
