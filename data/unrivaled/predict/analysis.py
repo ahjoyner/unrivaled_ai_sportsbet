@@ -321,9 +321,10 @@ def get_game_stats(game_id, player_name):
         print(f"Error fetching game stats for player {player_name} in game {game_id}: {e}", file=sys.stderr)
         return {}
     
-def save_analysis_results(player_name, game_id, confidence_level, reason):
+def save_analysis_results(player_name, confidence_level, reason):
     """
-    Save the analysis results inside `players/player_name/analysis_results/game_id` in Firestore.
+    Save the analysis results directly to the player's `analysis_results` collection in Firestore.
+    This will overwrite any existing analysis results for the player.
     """
     try:
         analysis_data = {
@@ -331,10 +332,11 @@ def save_analysis_results(player_name, game_id, confidence_level, reason):
             "reason": reason,
             "timestamp": firestore.SERVER_TIMESTAMP  # Timestamp for when analysis was performed
         }
-        db.collection("players").document(player_name).collection("analysis_results").document(game_id).set(analysis_data)
-        print(f"✅ Analysis results saved for {player_name} in game {game_id}")
+        # Save directly to the player's analysis_results collection
+        db.collection("players").document(player_name).collection("analysis_results").document("latest").set(analysis_data)
+        print(f"✅ Analysis results saved for {player_name}")
     except Exception as e:
-        print(f"❌ Error saving analysis results for {player_name} in game {game_id}: {e}", file=sys.stderr)
+        print(f"❌ Error saving analysis results for {player_name}: {e}", file=sys.stderr)
 
 # --- Main Analysis Flow ---
 
@@ -396,7 +398,7 @@ async def analyze_player(player, player_teams):
     print(f"Reason: {reason}", file=sys.stderr)
 
     # Save the analysis results to Firestore
-    save_analysis_results(player_name, game_id, confidence_level, reason)
+    save_analysis_results(player_name, confidence_level, reason)
 
     return confidence_level, reason
 

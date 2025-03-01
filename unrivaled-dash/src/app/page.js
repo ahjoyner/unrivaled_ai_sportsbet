@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import annotationPlugin from "chartjs-plugin-annotation";
 import { Bar } from "react-chartjs-2";
 import {
@@ -68,7 +69,6 @@ export default function Home() {
   );
 
   // Fetch players and their prop lines from Firestore
-  // Fetch players and their prop lines from Firestore
   useEffect(() => {
     const fetchPlayers = async () => {
       try {
@@ -101,9 +101,9 @@ export default function Home() {
             const normalizedName = normalizeName(playerData.display_name);
             const playerInfo = playersMap.get(normalizedName) || {};
 
-            // Fetch analysis results for the player from players/{player_name}/analysis_results/{game_id}
+            // Fetch analysis results for the player from players/{player_name}/analysis_results/latest
             const playerNameFirestore = playerData.display_name.replace(/ /g, "_");
-            const analysisDocRef = doc(db, `players/${playerNameFirestore}/analysis_results`, propLineDoc.id); // Use propLineDoc.id (game_id) as the document ID
+            const analysisDocRef = doc(db, `players/${playerNameFirestore}/analysis_results`, "latest"); // Use "latest" as the document ID
             const analysisSnapshot = await getDoc(analysisDocRef);
             const analysisData = analysisSnapshot.exists() ? analysisSnapshot.data() : {};
 
@@ -149,7 +149,7 @@ export default function Home() {
       for (const player of players) {
         try {
           const playerNameFirestore = player.displayName.replace(/ /g, "_");
-          const analysisDoc = doc(db, `players/${playerNameFirestore}/analysis_results`, player.id);
+          const analysisDoc = doc(db, `players/${playerNameFirestore}/analysis_results`, "latest"); // Use "latest" as the document ID
           const analysisSnapshot = await getDoc(analysisDoc);
           if (analysisSnapshot.exists()) {
             updatedResults[player.id] = analysisSnapshot.data();
@@ -300,6 +300,7 @@ export default function Home() {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-900">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+        <span className="ml-4 text-orange-500 text-lg">Loading...</span>
       </div>
     );
   }
@@ -313,94 +314,121 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900">
-      <header className="fixed top-0 left-0 w-full bg-gray-800 py-4 shadow-lg z-50">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
+      {/* Header */}
+      <header className="fixed top-0 left-0 w-full bg-gradient-to-r from-blue-600 to-purple-600 py-4 shadow-lg z-50">
         <div className="container mx-auto px-4 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-white flex items-center">
-            <img src="/logo.jpg" alt="MODUEL Logo" className="h-10 mr-2" />
+          <h1 className="text-xl sm:text-3xl font-bold text-white flex items-center">
+            <img src="/logo.jpg" alt="MODUEL Logo" className="h-8 sm:h-10 mr-2 rounded-full" />
             MODUEL Prop Confidence
           </h1>
           <input
-            type="text" 
+            type="text"
             placeholder="Search players..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-gray-700 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500 w-64"
+            className="bg-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white w-32 sm:w-64 placeholder:text-white/70"
           />
         </div>
       </header>
-      <div className="container mx-auto p-8 pt-24 relative z-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {filteredPlayers.map((player, index) => {
-          const confidence = player.confidence_level || 0;
-          const confidenceColor = confidence >= 70 ? "bg-gradient-to-r from-green-400 to-blue-500" : "bg-gradient-to-r from-red-400 to-pink-500";
-          return (
-            <div key={index} className="bg-gray-800 rounded-lg p-6 text-center shadow-lg relative hover:shadow-xl transition-shadow">
-              <button
-                className="absolute top-2 right-2 bg-gray-700 text-white px-2 py-1 rounded-lg hover:bg-gray-600 transition-colors"
-                onClick={() => openLast5GamesModal(player)}
+
+      {/* Main Content */}
+      <motion.div
+        className="container mx-auto p-4 sm:p-8 pt-20 sm:pt-24 relative z-10"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+          {filteredPlayers.map((player, index) => {
+            const confidence = player.confidence_level || 0;
+            const confidenceColor = confidence >= 70 ? "bg-gradient-to-r from-green-400 to-blue-500" : "bg-gradient-to-r from-red-400 to-pink-500";
+            return (
+              <motion.div
+                key={index}
+                className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 sm:p-6 text-center shadow-xl relative hover:shadow-2xl transition-shadow"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ scale: 1.05 }}
               >
-                L5
-              </button>
-              <div className="w-32 h-32 bg-gray-700 rounded-full mx-auto mb-4 overflow-hidden">
-                {player.headshot_url ? (
-                  <img
-                    src={player.headshot_url}
-                    alt={player.displayName}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-700"></div>
-                )}
-              </div>
-              <p className="text-gray-400 text-sm">
-                {player.team} - {player.position}
-              </p>
-              <p className="text-white text-xl font-semibold mt-2">{player.displayName}</p>
-              <p className="text-white text-2xl font-bold mt-4">
-                {player.prop_line} <span className="text-sm text-gray-400">points</span>
-              </p>
-              <div className="mt-6">
-                <div className="w-full bg-gray-700 rounded-full h-2.5">
-                  <div
-                    className={`h-2.5 rounded-full ${confidenceColor}`}
-                    style={{
-                      width: `${(confidence / 100) * 100}%`,
-                      transition: "width 0.5s ease-in-out",
-                    }}
-                  ></div>
+                <button
+                  className="absolute top-2 right-2 bg-gray-700 text-white px-2 py-1 rounded-lg hover:bg-gray-600 transition-colors"
+                  onClick={() => openLast5GamesModal(player)}
+                >
+                  L5
+                </button>
+                <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-700 rounded-full mx-auto mb-4 overflow-hidden">
+                  {player.headshot_url ? (
+                    <img
+                      src={player.headshot_url}
+                      alt={player.displayName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-700"></div>
+                  )}
                 </div>
-                <div className="flex justify-between text-gray-400 text-sm mt-2">
-                  <span>0</span>
-                  <span>100</span>
+                <p className="text-gray-400 text-sm">
+                  {player.team} - {player.position}
+                </p>
+                <p className="text-white text-lg sm:text-xl font-semibold mt-2">{player.displayName}</p>
+                <p className="text-white text-xl sm:text-2xl font-bold mt-4">
+                  {player.prop_line} <span className="text-sm text-gray-400">points</span>
+                </p>
+                <div className="mt-6">
+                  <div className="w-full bg-gray-700 rounded-full h-2.5">
+                    <div
+                      className={`h-2.5 rounded-full confidence-bar ${confidenceColor} ${confidence >= 70 ? "pulse" : ""}`}
+                      style={{
+                        width: `${(confidence / 100) * 100}%`,
+                        transition: "width 0.5s ease-in-out",
+                      }}
+                    ></div>
+                  </div>
+                  <div className="flex justify-between text-gray-400 text-sm mt-2">
+                    <span>0</span>
+                    <span>100</span>
+                  </div>
                 </div>
-              </div>
-              <button
-                className="mt-4 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors w-full"
-                onClick={() =>
-                  setSelectedPlayer({
-                    ...player,
-                    reason: player.reason, // Pass the reason map directly
-                  })
-                }
-              >
-                <b>View Analysis</b>
-              </button>
-            </div>
-          );
-        })}
+                <button
+                  className="mt-4 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors w-full"
+                  onClick={() =>
+                    setSelectedPlayer({
+                      ...player,
+                      reason: player.reason, // Pass the reason map directly
+                    })
+                  }
+                >
+                  <b>View Analysis</b>
+                </button>
+              </motion.div>
+            );
+          })}
         </div>
-      </div>
+      </motion.div>
+
+      {/* Selected Player Modal */}
       {selectedPlayer && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-lg w-full relative">
+        <motion.div
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            className="bg-gray-800 rounded-lg p-4 sm:p-6 w-11/12 sm:max-w-lg relative"
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0.9 }}
+          >
             <button
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-300"
               onClick={() => setSelectedPlayer(null)}
             >
               &times;
             </button>
-            <h2 className="text-2xl font-bold text-white mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
               {selectedPlayer.displayName} ({selectedPlayer.position} - {selectedPlayer.team})
             </h2>
             <div className="bg-gray-700 p-4 rounded-lg mb-6">
@@ -471,19 +499,31 @@ export default function Home() {
             >
               Close
             </button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+
+      {/* Last 5 Games Modal */}
       {last5GamesModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-lg w-full relative">
+        <motion.div
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            className="bg-gray-800 rounded-lg p-4 sm:p-6 w-11/12 sm:max-w-lg relative"
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0.9 }}
+          >
             <button
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-300"
               onClick={() => setLast5GamesModal(null)}
             >
               &times;
             </button>
-            <h2 className="text-2xl font-bold text-white mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
               {last5GamesModal.displayName}&apos;s Last 5 Games
             </h2>
             {(() => {
@@ -591,88 +631,102 @@ export default function Home() {
             >
               Close
             </button>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+
+      {/* Game Stats Modal */}
       {gameStatsModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-              <div className="bg-gray-800 rounded-lg p-6 max-w-2xl w-full">
-                  <h2 className="text-2xl font-bold text-white mb-4">
-                      🏀 Game Stats for {gameStatsModal.player_name} vs. {gameStatsModal.opponent}
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="bg-gray-700 p-4 rounded-lg">
-                          <h3 className="text-lg font-semibold text-orange-400 mb-3">Basic Stats</h3>
-                          <div className="space-y-2">
-                              <StatItem label="Points" value={gameStatsModal.pts} icon="🔥" />
-                              <StatItem label="Rebounds" value={gameStatsModal.reb} icon="🏀" />
-                              <StatItem label="Assists" value={gameStatsModal.ast} icon="🎯" />
-                              <StatItem label="Steals" value={gameStatsModal.stl} icon="⛹️‍♀️" />
-                              <StatItem label="Blocks" value={gameStatsModal.blk} icon="🚫" />
-                              <StatItem label="Turnovers" value={gameStatsModal.turnovers} icon="🔄" />
-                              <StatItem label="Personal Fouls" value={gameStatsModal.pf} icon="⚠️" />
-                          </div>
-                      </div>
-                      <div className="bg-gray-700 p-4 rounded-lg">
-                          <h3 className="text-lg font-semibold text-orange-400 mb-3">Shooting Stats</h3>
-                          <div className="space-y-2">
-                              <StatItem 
-                                  label="Field Goals" 
-                                  value={{ made: gameStatsModal.fg_m, attempted: gameStatsModal.fg_a }}
-                                  isShootingStat
-                              />
-                              <StatItem
-                                  label="Field Goal %"
-                                  value={(
-                                      (gameStatsModal.fg_m / gameStatsModal.fg_a * 100).toFixed(1))
-                                  }
-                                  unit="%"
-                              />
-                              <StatItem 
-                                  label="3-Pointers" 
-                                  value={{ made: gameStatsModal.three_pt_m, attempted: gameStatsModal.three_pt_a }}
-                                  isShootingStat
-                              />
-                              <StatItem
-                                  label="3-Point %"
-                                  value={(
-                                      (gameStatsModal.three_pt_m / gameStatsModal.three_pt_a * 100).toFixed(1))
-                                  }
-                                  unit="%"
-                              />
-                              <StatItem 
-                                  label="Free Throws" 
-                                  value={{ made: gameStatsModal.ft_m, attempted: gameStatsModal.ft_a }}
-                                  isShootingStat
-                              />
-                              <StatItem
-                                  label="Free Throw %"
-                                  value={(
-                                      (gameStatsModal.ft_m / gameStatsModal.ft_a * 100).toFixed(1))
-                                  }
-                                  unit="%"
-                              />
-                          </div>
-                      </div>
-                      <div className="bg-gray-700 p-4 rounded-lg col-span-full">
-                          <h3 className="text-lg font-semibold text-orange-400 mb-3">Advanced Stats</h3>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                              <StatItem label="Minutes Played" value={gameStatsModal.min} unit="min" />
-                              <StatItem label="Offensive Rebounds" value={gameStatsModal.offensive_rebounds} />
-                              <StatItem label="Defensive Rebounds" value={gameStatsModal.defensive_rebounds} />
-                              <StatItem label="Game Date" value={new Date(gameStatsModal.game_date).toLocaleDateString()} />
-                          </div>
-                      </div>
-                  </div>
-                  <button
-                      className="mt-6 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
-                      onClick={() => setGameStatsModal(null)}
-                  >
-                      Close
-                  </button>
+        <motion.div
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            className="bg-gray-800 rounded-lg p-4 sm:p-6 w-11/12 sm:max-w-2xl relative"
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0.9 }}
+          >
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
+              🏀 Game Stats for {gameStatsModal.player_name} vs. {gameStatsModal.opponent}
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-gray-700 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-orange-400 mb-3">Basic Stats</h3>
+                <div className="space-y-2">
+                  <StatItem label="Points" value={gameStatsModal.pts} icon="🔥" />
+                  <StatItem label="Rebounds" value={gameStatsModal.reb} icon="🏀" />
+                  <StatItem label="Assists" value={gameStatsModal.ast} icon="🎯" />
+                  <StatItem label="Steals" value={gameStatsModal.stl} icon="⛹️‍♀️" />
+                  <StatItem label="Blocks" value={gameStatsModal.blk} icon="🚫" />
+                  <StatItem label="Turnovers" value={gameStatsModal.turnovers} icon="🔄" />
+                  <StatItem label="Personal Fouls" value={gameStatsModal.pf} icon="⚠️" />
+                </div>
               </div>
-          </div>
+              <div className="bg-gray-700 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-orange-400 mb-3">Shooting Stats</h3>
+                <div className="space-y-2">
+                  <StatItem 
+                    label="Field Goals" 
+                    value={{ made: gameStatsModal.fg_m, attempted: gameStatsModal.fg_a }}
+                    isShootingStat
+                  />
+                  <StatItem
+                    label="Field Goal %"
+                    value={(
+                      (gameStatsModal.fg_m / gameStatsModal.fg_a * 100).toFixed(1))
+                    }
+                    unit="%"
+                  />
+                  <StatItem 
+                    label="3-Pointers" 
+                    value={{ made: gameStatsModal.three_pt_m, attempted: gameStatsModal.three_pt_a }}
+                    isShootingStat
+                  />
+                  <StatItem
+                    label="3-Point %"
+                    value={(
+                      (gameStatsModal.three_pt_m / gameStatsModal.three_pt_a * 100).toFixed(1))
+                    }
+                    unit="%"
+                  />
+                  <StatItem 
+                    label="Free Throws" 
+                    value={{ made: gameStatsModal.ft_m, attempted: gameStatsModal.ft_a }}
+                    isShootingStat
+                  />
+                  <StatItem
+                    label="Free Throw %"
+                    value={(
+                      (gameStatsModal.ft_m / gameStatsModal.ft_a * 100).toFixed(1))
+                    }
+                    unit="%"
+                  />
+                </div>
+              </div>
+              <div className="bg-gray-700 p-4 rounded-lg col-span-full">
+                <h3 className="text-lg font-semibold text-orange-400 mb-3">Advanced Stats</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <StatItem label="Minutes Played" value={gameStatsModal.min} unit="min" />
+                  <StatItem label="Offensive Rebounds" value={gameStatsModal.offensive_rebounds} />
+                  <StatItem label="Defensive Rebounds" value={gameStatsModal.defensive_rebounds} />
+                  <StatItem label="Game Date" value={new Date(gameStatsModal.game_date).toLocaleDateString()} />
+                </div>
+              </div>
+            </div>
+            <button
+              className="mt-6 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+              onClick={() => setGameStatsModal(null)}
+            >
+              Close
+            </button>
+          </motion.div>
+        </motion.div>
       )}
+
+      {/* Footer */}
       <footer className="bg-gray-800 text-white py-6 mt-8">
         <div className="container mx-auto px-4 text-center">
           <p className="text-gray-400">&copy; 2023 MODUEL. All rights reserved.</p>
