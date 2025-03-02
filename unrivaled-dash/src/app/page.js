@@ -36,7 +36,7 @@ const cleanReasonText = (text) => {
 };
 
 const StatItem = ({ label, value, icon, unit, isShootingStat }) => (
-  <div className="flex justify-between items-center">
+  <div className="stat-item mobile-smaller-text flex justify-between items-center gap-2">
     <span className="text-gray-300">
       {icon && <span className="mr-2">{icon}</span>}
       {label}
@@ -420,7 +420,7 @@ export default function Home() {
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="bg-gray-800 rounded-lg p-4 sm:p-6 w-11/12 sm:max-w-lg relative"
+            className="modal p-6 w-11/12 sm:max-w-lg relative"
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.9 }}
@@ -515,7 +515,7 @@ export default function Home() {
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="bg-gray-800 rounded-lg p-4 sm:p-6 w-11/12 sm:max-w-lg relative"
+            className="modal p-6 w-11/12 sm:max-w-lg relative"
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.9 }}
@@ -624,7 +624,7 @@ export default function Home() {
               };
 
               return (
-                <div className="w-full h-64">
+                <div className="chart-container">
                   <Bar data={chartData} options={chartOptions} />
                 </div>
               );
@@ -648,17 +648,17 @@ export default function Home() {
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="bg-gray-800 rounded-lg p-4 sm:p-6 w-11/12 max-w-md sm:max-w-2xl relative max-h-[90vh] overflow-y-auto" // Added max-h and overflow-y-auto
+            className="modal p-6 w-11/12 sm:max-w-2xl relative max-h-[90vh] overflow-y-auto"
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.9 }}
           >
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 mobile-smaller-heading">
               🏀 Game Stats for {gameStatsModal.player_name} vs. {gameStatsModal.opponent}
             </h2>
             <div className="grid grid-cols-2 gap-6">
               <div className="bg-gray-700 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-orange-400 mb-3">Basic Stats</h3>
+                <h3 className="text-lg font-semibold text-orange-400 mb-3 mobile-smaller-heading">Basic Stats</h3>
                 <div className="space-y-2">
                   <StatItem label="Points" value={gameStatsModal.pts} icon="🔥" />
                   <StatItem label="Rebounds" value={gameStatsModal.reb} icon="🏀" />
@@ -670,7 +670,7 @@ export default function Home() {
                 </div>
               </div>
               <div className="bg-gray-700 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-orange-400 mb-3">Shooting Stats</h3>
+                <h3 className="text-lg font-semibold text-orange-400 mb-3 mobile-smaller-heading">Shooting Stats</h3>
                 <div className="space-y-2">
                   <StatItem 
                     label="Field Goals" 
@@ -711,7 +711,7 @@ export default function Home() {
                 </div>
               </div>
               <div className="bg-gray-700 p-4 rounded-lg col-span-full">
-                <h3 className="text-lg font-semibold text-orange-400 mb-3">Advanced Stats</h3>
+                <h3 className="text-lg font-semibold text-orange-400 mb-3 mobile-smaller-heading">Advanced Stats</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <StatItem label="Minutes Played" value={gameStatsModal.min} unit="min" />
                   <StatItem label="Offensive Rebounds" value={gameStatsModal.offensive_rebounds} />
