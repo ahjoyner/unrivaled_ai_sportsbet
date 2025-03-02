@@ -542,7 +542,8 @@ export default function Home() {
               const labels = reversedGames.map((game) => {
                 if (game.game_date) {
                   const gameDate = game.game_date.toDate ? game.game_date.toDate() : new Date(game.game_date);
-                  return gameDate.toLocaleDateString();
+                  // Use UTC to avoid timezone issues
+                  return gameDate.toLocaleDateString("en-US", { timeZone: "UTC" });
                 } else {
                   return "No Date"; // Fallback for missing or invalid dates
                 }
