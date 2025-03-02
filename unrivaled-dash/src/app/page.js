@@ -24,6 +24,7 @@ import {
   orderBy, 
   limit 
 } from "firebase/firestore";
+import { useMediaQuery } from "react-responsive";
 
 // Utility function to normalize names
 const normalizeName = (name) => {
@@ -57,6 +58,8 @@ export default function Home() {
   const [last5GamesModal, setLast5GamesModal] = useState(null);
   const [gameStatsModal, setGameStatsModal] = useState(null);
   const [reasonIndex, setReasonIndex] = useState(1);
+
+  const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
 
   ChartJS.register(
     CategoryScale,
@@ -339,7 +342,7 @@ export default function Home() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className={`grid ${isMobile ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-4 sm:gap-6`}>
           {filteredPlayers.map((player, index) => {
             const confidence = player.confidence_level || 0;
             const confidenceColor = confidence >= 70 ? "bg-gradient-to-r from-green-400 to-blue-500" : "bg-gradient-to-r from-red-400 to-pink-500";
@@ -372,8 +375,8 @@ export default function Home() {
                 <p className="text-gray-400 text-sm">
                   {player.team} - {player.position}
                 </p>
-                <p className="text-white text-lg sm:text-xl font-semibold mt-2">{player.displayName}</p>
-                <p className="text-white text-xl sm:text-2xl font-bold mt-4">
+                <p className={`text-white ${isMobile ? "text-base" : "text-lg sm:text-xl"} font-semibold mt-2`}>{player.displayName}</p>
+                <p className={`text-white ${isMobile ? "text-lg" : "text-xl sm:text-2xl"} font-bold mt-4`}>
                   {player.prop_line} <span className="text-sm text-gray-400">points</span>
                 </p>
                 <div className="mt-6">
