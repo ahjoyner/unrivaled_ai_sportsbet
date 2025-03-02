@@ -648,7 +648,7 @@ export default function Home() {
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="bg-gray-800 rounded-lg p-4 sm:p-6 w-11/12 sm:max-w-2xl relative max-h-[90vh] overflow-y-auto" // Added max-h and overflow-y-auto
+            className="bg-gray-800 rounded-lg p-4 sm:p-6 w-11/12 max-w-md sm:max-w-2xl relative max-h-[90vh] overflow-y-auto" // Added max-h and overflow-y-auto
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.9 }}
@@ -656,7 +656,7 @@ export default function Home() {
             <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
               🏀 Game Stats for {gameStatsModal.player_name} vs. {gameStatsModal.opponent}
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-6">
               <div className="bg-gray-700 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold text-orange-400 mb-3">Basic Stats</h3>
                 <div className="space-y-2">
