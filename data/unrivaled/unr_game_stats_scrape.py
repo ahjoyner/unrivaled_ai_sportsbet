@@ -134,7 +134,7 @@ def insert_game_metadata_into_firestore(game_metadata):
 def insert_game_stats_into_firestore(game_stats_df):
     """Insert player game stats into Firestore under players/{player_name}/games/{game_id}."""
     for _, row in game_stats_df.iterrows():
-        player_name = row["player_name"]
+        player_name = row["player_name"].replace(" ", "_")
         game_id = row["game_id"]
 
         # Check if the game stats already exist for this player
@@ -196,11 +196,6 @@ def insert_play_by_play_into_firestore(game_id, play_by_play_df):
     for _, row in play_by_play_df.iterrows():
         quarter = row["quarter"]
         time = row["time"]
-
-        # Skip rows with empty or invalid time
-        if not time or time.strip() == "":
-            print(f"⚠ Skipping row with empty time: {row}")
-            continue
 
         if quarter == "Q4":
             # For Q4, use an incremental index since it's untimed

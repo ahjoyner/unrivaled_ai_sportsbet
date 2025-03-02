@@ -4,6 +4,7 @@ import pandas as pd
 import re
 import unicodedata
 from difflib import get_close_matches
+import re
 
 # Base URL for Unrivaled
 BASE_URL = "https://www.unrivaled.basketball"
@@ -50,7 +51,7 @@ def scrape_play_by_play(game_id, game_date, db):
         score = tds[2].text.strip()
         home_score, away_score = score.split("-") if "-" in score else ("", "")
 
-        player = extract_player(play_desc, player_stats)
+        player = extract_player_name(play_desc, db)
 
         plays.append({
             "game_id": game_id,
@@ -66,30 +67,32 @@ def scrape_play_by_play(game_id, game_date, db):
 
     return pd.DataFrame(plays)
 
-def extract_player(play_desc, player_stats):
-    play_desc = normalize_text(play_desc)
-    patterns = [
-        r"^([A-Za-z]+(?: [A-Za-z\-]+)+) (makes|misses|assist|defensive rebound|offensive rebound|bad pass|personal foul|steal|block|turnover|free throw|bad pass turnover)"
-    ]
-    
-    for pattern in patterns:
-        match = re.search(pattern, play_desc)
-        if match:
-            extracted_player = match.group(1).strip()
-            closest_matches = get_close_matches(extracted_player, player_stats, n=1, cutoff=0.8)
-            return closest_matches[0] if closest_matches else None
-    return None
+def extract_player_name(play_description, db):
+    """
+    Extract the player name from the play description.
+    Check if the matched name exists in the `players/` collection in Firestore.
+    Returns the exact player name from Firestore if found, otherwise None.
+    """
+    # Define a regex pattern to match player names at the start of the description
+    # Supports names like "Skylar Diggins-Smith", "Katie Lou Samuelson", "A'ja Wilson", etc.
+    player_name_pattern = r"^([A-Z][a-z]+(?:['-]?[A-Z]?[a-z]+)*(?:\s[A-Z][a-z]+(?:['-]?[A-Z]?[a-z]+)*)*)"
 
-def insert_play_by_play_into_firestore(play_by_play_df, db):
-    index = 0
-    for _, row in play_by_play_df.iterrows():
-        game_id = str(row["game_id"])
-        if row['quarter'] == "Q4":
-            event_id = f"{row['quarter']}_{index}"  # Unique event ID
-        else:
-            event_id = f"{row['quarter']}_{row['time'].replace(':', '')}"  # Unique event ID
+    # Search for the player name in the play description
+    match = re.match(player_name_pattern, play_description)
+    if not match:
+        return None  # Return None if no player name is found
 
-        db.collection("games").document(game_id).collection("play_by_play").document(event_id).set(row.to_dict())
-        index += 1
+    # Extract the matched player name
+    matched_name = match.group(1).strip().replace(" ", "_")
 
-    print(f"✅ Uploaded {len(play_by_play_df)} play-by-play events to Firestore.")
+    # Fetch all player names from the `players/` collection
+    players_ref = db.collection("players").stream()
+    player_names = {doc.id.lower(): doc.id for doc in players_ref}  # Map lowercase names to original names
+
+    # Check if the matched name exists in the `players/` collection (case-insensitive)
+    lowercase_matched_name = matched_name.lower()
+    if lowercase_matched_name in player_names:
+        return player_names[lowercase_matched_name]  # Return the exact name from Firestore
+
+    return None  # Return None if the matched name is not in the `players/` collection
+
