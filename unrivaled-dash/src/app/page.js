@@ -337,7 +337,7 @@ export default function Home() {
 
       {/* Main Content */}
       <motion.div
-        className="container mx-auto p-4 sm:p-8 pt-20 sm:pt-24 relative z-10"
+        className="container mx-auto p-4 sm:p-8 pt-24 sm:pt-32 relative z-10" // Increased top padding for mobile
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -647,7 +647,7 @@ export default function Home() {
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="bg-gray-800 rounded-lg p-4 sm:p-6 w-11/12 sm:max-w-2xl relative"
+            className="bg-gray-800 rounded-lg p-4 sm:p-6 w-11/12 sm:max-w-2xl relative max-h-[90vh] overflow-y-auto" // Added max-h and overflow-y-auto
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.9 }}
