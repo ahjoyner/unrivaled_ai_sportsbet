@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 
 export default async (req, res) => {
   try {
-    // Check if the UNR league is available
+    console.log('Fetching UNR league data...');
     const response = await fetch('https://api.prizepicks.com/projections?league_id=288&per_page=250&single_stat=true', {
       headers: {
         'Host': 'api.prizepicks.com',
@@ -13,87 +13,87 @@ export default async (req, res) => {
       },
     });
 
+    // Check if the response is JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error('Invalid response content type:', contentType);
+      throw new Error('Invalid response: Expected JSON but received something else.');
+    }
+
     const data = await response.json();
+    console.log('API Response:', JSON.stringify(data, null, 2));
 
-    // If the UNR league is available, trigger the scraping pipeline
-    if (data && data.length > 0) {
+    if (data && data.data && data.data.length > 0) {
       console.log('UNR League is available. Triggering scraping pipeline...');
-
-      // Trigger the scraping pipeline (e.g., call scrape.go)
       await triggerScrapingPipeline();
-
       res.status(200).json({ message: 'UNR League detected. Scraping pipeline triggered.' });
     } else {
       console.log('UNR League not available.');
       res.status(200).json({ message: 'UNR League not available.' });
     }
   } catch (error) {
-    console.error('Error polling UNR league:', error);
+    console.error('Error polling UNR league:', error.message);
     res.status(500).json({ error: 'Failed to poll UNR league.' });
   }
 };
 
 async function triggerScrapingPipeline() {
-    const { exec } = require('child_process');
-  
-    // Run scrape.go
-    exec('go run data/unrivaled/scrape.go', (error, stdout, stderr) => {
+  console.log('Triggering scraping pipeline...');
+  const { exec } = require('child_process');
+
+  exec('go run data/unrivaled/scrape.go', (error, stdout, stderr) => {
+    if (error) {
+      console.error('Error running scrape.go:', error.message);
+      return;
+    }
+    console.log('scrape.go output:', stdout);
+
+    exec('go run data/unrivaled/unr_projections.go', (error, stdout, stderr) => {
       if (error) {
-        console.error('Error running scrape.go:', error);
+        console.error('Error running unr_projections.go:', error.message);
         return;
       }
-      console.log('scrape.go output:', stdout);
-  
-      // Run unr_projections.go
-      exec('go run data/unrivaled/unr_projections.go', (error, stdout, stderr) => {
+      console.log('unr_projections.go output:', stdout);
+
+      exec('python3 data/unrivaled/unr_player_fetcher.py', (error, stdout, stderr) => {
         if (error) {
-          console.error('Error running unr_projections.go:', error);
+          console.error('Error running unr_player_fetcher.py:', error.message);
           return;
         }
-        console.log('unr_projections.go output:', stdout);
-  
-        // Run unr_player_fetcher
-        exec('python3 data/unrivaled/unr_player_fetcher.py', (error, stdout, stderr) => {
+        console.log('unr_player_fetcher.py output:', stdout);
+
+        exec('python3 data/unrivaled/unr_player_scrape.py', (error, stdout, stderr) => {
           if (error) {
-            console.error('Error running unr_player_fetcher.py:', error);
+            console.error('Error running unr_player_scrape.py:', error.message);
             return;
           }
-          console.log('unr_player_fetcher.py output:', stdout);
-  
-          // Run Python scripts
-          exec('python3 data/unrivaled/unr_player_scrape.py', (error, stdout, stderr) => {
+          console.log('unr_player_scrape.py output:', stdout);
+
+          exec('python3 data/unrivaled/unr_game_stats_scrape.py', (error, stdout, stderr) => {
             if (error) {
-              console.error('Error running unr_player_scrape.py:', error);
+              console.error('Error running unr_game_stats_scrape.py:', error.message);
               return;
             }
-            console.log('unr_player_scrape.py output:', stdout);
-  
-            exec('python3 data/unrivaled/unr_game_stats_scrape.py', (error, stdout, stderr) => {
+            console.log('unr_game_stats_scrape.py output:', stdout);
+
+            exec('python3 data/unrivaled/unr_team_scrape.py', (error, stdout, stderr) => {
               if (error) {
-                console.error('Error running unr_game_stats_scrape.py:', error);
+                console.error('Error running unr_team_scrape.py:', error.message);
                 return;
               }
-              console.log('unr_game_stats_scrape.py output:', stdout);
-  
-              exec('python3 data/unrivaled/unr_team_scrape.py', (error, stdout, stderr) => {
+              console.log('unr_team_scrape.py output:', stdout);
+
+              exec('python3 data/unrivaled/predict/analysis.py', (error, stdout, stderr) => {
                 if (error) {
-                  console.error('Error running unr_team_scrape.py:', error);
+                  console.error('Error running analysis.py:', error.message);
                   return;
                 }
-                console.log('unr_team_scrape.py output:', stdout);
-  
-                // Run analysis.py
-                exec('python3 data/unrivaled/predict/analysis.py', (error, stdout, stderr) => {
-                  if (error) {
-                    console.error('Error running analysis.py:', error);
-                    return;
-                  }
-                  console.log('analysis.py output:', stdout);
-                });
+                console.log('analysis.py output:', stdout);
               });
             });
           });
         });
       });
     });
-  }
+  });
+}
