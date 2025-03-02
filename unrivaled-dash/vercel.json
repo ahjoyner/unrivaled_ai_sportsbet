@@ -1,7 +1,7 @@
 {
     "crons": [
       {
-        "path": "src/app/api/poll-unr-league",
+        "path": "/src/app/api/poll-unr-league",
         "schedule": "*/5 * * * *"
       }
     ]
