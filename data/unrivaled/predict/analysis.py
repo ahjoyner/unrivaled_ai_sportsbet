@@ -8,6 +8,8 @@ from datetime import datetime
 from dotenv import load_dotenv
 import os
 from collections import defaultdict
+import re
+from concurrent.futures import ThreadPoolExecutor
 
 # Load environment variables
 load_dotenv("unrivaled-dash/.env.local")
@@ -114,34 +116,42 @@ def get_game_ids_for_player(player_name):
 
 def analyze_streaks(plays):
     """
-    Analyze streaks (hot streaks, cold streaks, assist streaks without turnovers) from play-by-play data.
+    Analyze streaks in parallel for large datasets.
     """
     streaks = {
-        "hot_streaks": 0,  # Back-to-back makes
-        "cold_streaks": 0,  # Back-to-back misses
-        "assist_streaks": 0  # Assists without turnovers
+        "hot_streaks": 0,
+        "cold_streaks": 0,
+        "assist_streaks": 0
     }
 
-    previous_play = None
-    for play in plays:
+    def process_play(play, previous_play):
         description = play.get("play_description", "").lower()
+        result = {"hot": 0, "cold": 0, "assist": 0}
 
-        # Hot streaks (back-to-back makes)
         if "makes" in description:
             if previous_play and "makes" in previous_play.get("play_description", "").lower():
-                streaks["hot_streaks"] += 1
-
-        # Cold streaks (back-to-back misses)
-        if "misses" in description:
+                result["hot"] = 1
+        elif "misses" in description:
             if previous_play and "misses" in previous_play.get("play_description", "").lower():
-                streaks["cold_streaks"] += 1
-
-        # Assist streaks without turnovers
-        if "assist" in description:
+                result["cold"] = 1
+        elif "assist" in description:
             if previous_play and "turnover" not in previous_play.get("play_description", "").lower():
-                streaks["assist_streaks"] += 1
+                result["assist"] = 1
 
-        previous_play = play
+        return result
+
+    with ThreadPoolExecutor() as executor:
+        futures = []
+        previous_play = None
+        for play in plays:
+            futures.append(executor.submit(process_play, play, previous_play))
+            previous_play = play
+
+        for future in futures:
+            result = future.result()
+            streaks["hot_streaks"] += result["hot"]
+            streaks["cold_streaks"] += result["cold"]
+            streaks["assist_streaks"] += result["assist"]
 
     return streaks
 
@@ -184,6 +194,7 @@ def get_opposing_team_stats(game_id, player_team):
         if game_doc.exists:
             game_data = game_doc.to_dict()
             opposing_team = game_data["away_team"] if game_data["home_team"] == player_team else game_data["home_team"]
+            # print(player_team, opposing_team)
 
             # Fetch the opposing team's stats
             opposing_team_stats = db.collection("teams").document(opposing_team).get()
@@ -217,13 +228,19 @@ def get_past_performance_against_opponent(player_name, opposing_team):
 
         # Fetch game IDs for the player
         games_ref = db.collection("players").document(exact_player_name).collection("games").stream()
+        doc_ref = db.collection("players").document(exact_player_name)
+        doc = doc_ref.get()
+
+        team = doc.to_dict().get("team")
+
+        # print(team)
         past_performance = []
 
         for game in games_ref:
-            game_data = game.to_dict()
+            # game_data = game.to_dict()
             game_id = game.id
             game_stats = get_game_stats(game_id, exact_player_name)
-            opposing_team_stats = get_opposing_team_stats(game_id, game_data.get("team", ""))
+            opposing_team_stats = get_opposing_team_stats(game_id, team)
 
             if opposing_team_stats.get("opposing_team", "").lower() == opposing_team.lower():
                 past_performance.append({
@@ -383,46 +400,61 @@ async def analyze_player(player):
     """
     Analyze a player's performance across all their games.
     """
-    player_name = player["player_data"]["name"].replace(" ", "_")
-    player_team = player["player_data"]["team"]
-    opposing_team = player["projection_data"]["description"]
-    player_prop = player["projection_data"]["line_score"]
+    async with semaphore:  # Use semaphore to limit concurrency
+        player_name = player["player_data"]["name"].replace(" ", "_")
+        # Fetch all player names from the `players/` collection
+        players_ref = db.collection("players").stream()
+        player_names = {doc.id.lower(): doc.id for doc in players_ref}  # Map lowercase names to original names
 
-    if not player_team:
-        print(f"No team found for player: {player_name}", file=sys.stderr)
-        return None
+        # Check if the lowercase version of the input player_name exists in the map
+        lowercase_player_name = player_name.lower()
+        if lowercase_player_name not in player_names:
+            print(f"No player found with name: {player_name}", file=sys.stderr)
+            return []
 
-    game_ids = get_game_ids_for_player(player_name)
-    if not game_ids:
-        print(f"No games found for player: {player_name}", file=sys.stderr)
-        return None
+        # Use the original name from the `players/` collection
+        player_name = player_names[lowercase_player_name]
+        # print(player_name)
+        player_team = player["player_data"]["team"]
+        opposing_team = player["projection_data"]["description"]
+        player_prop = player["projection_data"]["line_score"]
 
-    async with aiohttp.ClientSession() as session:
-        # Analyze game flow for each game
-        game_flow_analyses = []
-        for game_id in game_ids:
-            game_flow_analysis = await analyze_game_flow(session, player_name, game_id)
-            if game_flow_analysis:
-                game_flow_analyses.append(game_flow_analysis)
-
-        # Analyze past performance against the opposing team
-        past_performance_analysis = await analyze_past_performance(session, player_name, opposing_team)
-
-        # Fetch injury reports
-        injury_reports = fetch_injury_reports()
-
-        # Calculate final confidence level
-        final_analysis = await calculate_final_confidence_level(
-            session, player_name, player_team, game_flow_analyses, past_performance_analysis, player_prop, opposing_team, injury_reports
-        )
-
-        if final_analysis:
-            print(f"Final Analysis for {player_name}:\n{final_analysis}", file=sys.stderr)
-            return final_analysis
-        else:
-            print(f"Failed to generate final analysis for {player_name}.", file=sys.stderr)
+        if not player_team:
+            print(f"No team found for player: {player_name}", file=sys.stderr)
             return None
-        
+
+        game_ids = get_game_ids_for_player(player_name)
+        if not game_ids:
+            print(f"No games found for player: {player_name}", file=sys.stderr)
+            return None
+
+        async with aiohttp.ClientSession() as session:
+            # Analyze game flow for each game
+            game_flow_analyses = []
+            for game_id in game_ids:
+                game_flow_analysis = await analyze_game_flow(session, player_name, game_id)
+                if game_flow_analysis:
+                    game_flow_analyses.append(game_flow_analysis)
+
+            # Analyze past performance against the opposing team
+            past_performance_analysis = await analyze_past_performance(session, player_name, opposing_team)
+
+            # Fetch injury reports
+            injury_reports = fetch_injury_reports()
+
+            # Calculate final confidence level
+            final_analysis = await calculate_final_confidence_level(
+                session, player_name, player_team, game_flow_analyses, past_performance_analysis, player_prop, opposing_team, injury_reports
+            )
+
+            if final_analysis:
+                print(f"Final Analysis for {player_name}:\n{final_analysis}", file=sys.stderr)
+                save_analysis_results(player_name, final_analysis)  # Save the analysis results
+                return final_analysis
+            else:
+                print(f"Failed to generate final analysis for {player_name}.", file=sys.stderr)
+                return None
+
 def save_analysis_results(player_name, analysis_text):
     """
     Save the analysis results to Firestore under players/{player_name}/analysis_results.
@@ -487,8 +519,11 @@ async def main():
             "projection_data": player_data.get("projection_data", {})
         })
 
-    player_teams = get_player_teams()
-    tasks = [analyze_player(player, player_teams) for player in enriched_data]
+    # Set semaphore limit to the number of player props
+    global semaphore
+    semaphore = asyncio.Semaphore(len(enriched_data))
+
+    tasks = [analyze_player(player) for player in enriched_data]
     results = await asyncio.gather(*tasks)
 
     output = {}

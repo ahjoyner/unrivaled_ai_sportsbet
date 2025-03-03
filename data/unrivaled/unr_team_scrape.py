@@ -4,6 +4,7 @@ import pandas as pd
 import firebase_admin
 from firebase_admin import credentials, firestore
 from bs4 import BeautifulSoup
+import os
 
 # Initialize Firebase
 cred = credentials.Certificate("secrets/firebase_key.json")

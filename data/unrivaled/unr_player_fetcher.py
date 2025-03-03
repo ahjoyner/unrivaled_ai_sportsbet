@@ -4,6 +4,7 @@ import requests
 from requests.exceptions import RequestException
 import firebase_admin
 from firebase_admin import credentials, firestore
+import os
 
 # Suppress insecure request warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)

@@ -7,6 +7,7 @@ from firebase_admin import credentials, firestore
 from difflib import SequenceMatcher
 import unicodedata
 from datetime import datetime
+import os
 
 cred = credentials.Certificate("secrets/firebase_key.json")
 firebase_admin.initialize_app(cred)
@@ -156,17 +157,19 @@ def scrape_player_game_stats(player_url):
     return games
 
 def insert_into_firestore(player_stats_df):
+    players_ref = db.collection("players").stream()
+    player_names = {doc.id.lower(): doc.id for doc in players_ref} 
+
     for _, row in player_stats_df.iterrows():
-        player_name = row["name"]
+        player_data = row.to_dict()
+        player_name = player_data["name"]
         player_url = row["player_url"]
 
         # Replace spaces with underscores in the player name
         player_name_firestore = player_name.replace(" ", "_")
 
         player_game_stats = scrape_player_game_stats(player_url)
-        print(player_game_stats)
-
-        player_data = row.to_dict()
+        
         del player_data["name"]
         del player_data["player_url"]
 
