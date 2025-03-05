@@ -345,7 +345,7 @@ export default function Home() {
         <div className={`grid ${isMobile ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-4 sm:gap-6`}>
           {filteredPlayers.map((player, index) => {
             const confidence = player.confidence_level || 0;
-            const confidenceColor = confidence >= 70 ? "bg-gradient-to-r from-green-400 to-blue-500" : "bg-gradient-to-r from-red-400 to-pink-500";
+            const confidenceColor = confidence >= 51 ? "bg-gradient-to-r from-green-400 to-blue-500" : "bg-gradient-to-r from-red-400 to-pink-500";
             return (
               <motion.div
                 key={index}
