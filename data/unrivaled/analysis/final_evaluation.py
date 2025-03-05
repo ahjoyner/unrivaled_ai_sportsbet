@@ -60,42 +60,42 @@ async def calculate_final_confidence_level(session, player_name, player_team, pa
                 injury_context += f"{report['player']} ({report['team']}) is {report['status']} with {report['injury']}.\n"
 
     data = {
-    "model": DEEPSEEK_MODEL,
-    "messages": [
-        {
-            "role": "user",
-            "content": (
-                f"Analyze the following data for {player_name}:\n\n"
-                f"Past Game Analyses:\n{past_game_analyses_str}\n\n"
-                f"Past Performance Analysis against {opposing_team}:\n{past_performance_analysis}\n\n"
-                f"Player Prop: {player_prop} points\n\n"
-                f"Opposing Team: {opposing_team}\n\n"
-                f"Opposing Team Points Allowed: {pa} points, ranked {rank} out of 6 teams (6 being most pts allowed)\n\n"
-                f"Injury Reports:\n{injury_context}\n\n"
-                "Provide a confidence level (0-100) and 4 detailed reasons for taking the over or under on the player's prop line, as well as a final summary. "
-                "If over 50, I expect it to be an OVER for the prop. if under 50, i expect it to be an UNDER for the prop. "
-                "Please format your response as follows:\n"
-                "Confidence Level: <confidence_level>\n"
-                "Reason 1 (Performance Against Opposing Team): <reason_1>\n"
-                "Reason 2 (Scoring Trends - Clutch Performance in Critical Moments, Hot/Cold Streaks): <reason_2>\n"
-                "Reason 3 (Opposing Team's Defensive Weaknesses): <reason_3>\n"
-                "Reason 4 (Recent Performance - Last 5 Games): <reason_4>\n"
-                "Final Conclusion: <final_conclusion>\n\n"
-                "For the reasons, please provide detailed insights like:\n"
-                "- How the opposing team's defense ranks in points allowed and how it impacts the player's performance.\n"
-                "- The player's consistency in scoring above the prop line in past encounters with the opposing team.\n"
-                "- The player's role in their team and how it affects their scoring opportunities.\n"
-                "- The player's recent performance trends over the last 5 games.\n\n"
-                "Example format for reasons:\n"
-                "Reason 1 (Performance Against Opposing Team): {opposing_team} allowed {points_allowed} points this season. On top of this, {player_name} has scored above the prop line consistently in each of their past encounters with {opposing_team}, averaging {average_points_against_opponent} points per game. This suggests a favorable matchup for {player_name}.\n"
-                "Reason 2 (Scoring Trends - Clutch Performance in Critical Moments, Hot/Cold Streaks): {player_name} has shown a tendency to elevate their game in critical moments, particularly in the second half. In their last three games, they have had strong fourth-quarter performances, including an 8-point burst in one game and multiple three-pointers in another. This indicates they have the potential to exceed the prop line, especially if the game is close.\n"
-                "Reason 3 (Opposing Team's Defensive Weaknesses): {opposing_team} is missing key players like {injured_player} due to injuries, which could weaken their perimeter defense and rebounding. {player_name}'s strength in three-point shooting ({three_point_percentage}% against {opposing_team}) could be even more effective against a depleted defense. Additionally, {opposing_team}'s defensive rebounding may suffer without {injured_player}, potentially giving {player_name} more opportunities for second-chance points or open looks.\n"
-                "Reason 4 (Recent Performance - Last 5 Games): Over their last five games, {player_name} has averaged approximately {average_points_last_5} points per game, slightly below the prop line. However, they have shown the ability to exceed {player_prop} points in key games, such as their {best_game_points}-point performance against {opposing_team} and an 8-point burst in the fourth quarter of another game. Their recent trend of strong second-half performances suggests they could hit the over if they maintain their rhythm and take advantage of {opposing_team}'s defensive vulnerabilities.\n"
-                "Final Conclusion: While {player_name}'s recent scoring average ({average_points_last_5} points) is slightly below the prop line, their ability to perform in clutch moments, their strong three-point shooting, and {opposing_team}'s defensive weaknesses due to injuries make the over a reasonable bet. Their inconsistency in the first half is a concern, but their tendency to elevate their game in critical moments and their recent performances against {opposing_team} provide enough confidence to lean toward the over. Confidence level: {confidence_level}."
-            )
-        }
-    ]
-}
+        "model": DEEPSEEK_MODEL,
+        "messages": [
+            {
+                "role": "user",
+                "content": (
+                    f"Analyze the following data for {player_name}:\n\n"
+                    f"Past Game Analyses:\n{past_game_analyses_str}\n\n"
+                    f"Past Performance Analysis against {opposing_team}:\n{past_performance_analysis}\n\n"
+                    f"Player Prop: {player_prop} points\n\n"
+                    f"Opposing Team: {opposing_team}\n\n"
+                    f"Opposing Team Points Allowed: {pa} points, ranked {rank} out of 6 teams (6 being most pts allowed)\n\n"
+                    f"Injury Reports:\n{injury_context}\n\n"
+                    "Provide a definitive confidence level (0-100) and 4 detailed reasons for taking the over or under on the player's prop line, as well as a final summary. "
+                    "The confidence level should reflect a strong belief in the outcome, with 0-25 indicating an extreme under, 26-50 indicating a moderate under, 51-75 indicating a moderate over, and 76-100 indicating an extreme over. "
+                    "Please format your response as follows:\n"
+                    "Confidence Level: <confidence_level>\n"
+                    "Reason 1 (Performance Against Opposing Team): <reason_1>\n"
+                    "Reason 2 (Scoring Trends - Clutch Performance in Critical Moments, Hot/Cold Streaks): <reason_2>\n"
+                    "Reason 3 (Opposing Team's Defensive Weaknesses): <reason_3>\n"
+                    "Reason 4 (Recent Performance - Last 5 Games): <reason_4>\n"
+                    "Final Conclusion: <final_conclusion>\n\n"
+                    "For the reasons, please provide detailed insights like:\n"
+                    "- How the opposing team's defense ranks in points allowed and how it impacts the player's performance.\n"
+                    "- The player's consistency in scoring above the prop line in past encounters with the opposing team.\n"
+                    "- The player's role in their team and how it affects their scoring opportunities.\n"
+                    "- The player's recent performance trends over the last 5 games.\n\n"
+                    "Example format for reasons:\n"
+                    "Reason 1 (Performance Against Opposing Team): {opposing_team} allowed {points_allowed} points this season. On top of this, {player_name} has scored above the prop line consistently in each of their past encounters with {opposing_team}, averaging {average_points_against_opponent} points per game. This suggests a favorable matchup for {player_name}.\n"
+                    "Reason 2 (Scoring Trends - Clutch Performance in Critical Moments, Hot/Cold Streaks): {player_name} has shown a tendency to elevate their game in critical moments, particularly in the second half. In their last three games, they have had strong fourth-quarter performances, including an 8-point burst in one game and multiple three-pointers in another. This indicates they have the potential to exceed the prop line, especially if the game is close.\n"
+                    "Reason 3 (Opposing Team's Defensive Weaknesses): {opposing_team} is missing key players like {injured_player} due to injuries, which could weaken their perimeter defense and rebounding. {player_name}'s strength in three-point shooting ({three_point_percentage}% against {opposing_team}) could be even more effective against a depleted defense. Additionally, {opposing_team}'s defensive rebounding may suffer without {injured_player}, potentially giving {player_name} more opportunities for second-chance points or open looks.\n"
+                    "Reason 4 (Recent Performance - Last 5 Games): Over their last five games, {player_name} has averaged approximately {average_points_last_5} points per game, slightly below the prop line. However, they have shown the ability to exceed {player_prop} points in key games, such as their {best_game_points}-point performance against {opposing_team} and an 8-point burst in the fourth quarter of another game. Their recent trend of strong second-half performances suggests they could hit the over if they maintain their rhythm and take advantage of {opposing_team}'s defensive vulnerabilities.\n"
+                    "Final Conclusion: While {player_name}'s recent scoring average ({average_points_last_5} points) is slightly below the prop line, their ability to perform in clutch moments, their strong three-point shooting, and {opposing_team}'s defensive weaknesses due to injuries make the over a reasonable bet. Their inconsistency in the first half is a concern, but their tendency to elevate their game in critical moments and their recent performances against {opposing_team} provide enough confidence to lean toward the over. Confidence level: {confidence_level}."
+                )
+            }
+        ]
+    }
 
     try:
         timeout = aiohttp.ClientTimeout(total=120)  # 120-second timeout
