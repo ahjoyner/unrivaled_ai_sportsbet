@@ -120,12 +120,12 @@ export default function Home() {
               prop_line: projectionData.line_score || 0,
               stat_type: projectionData.stat_type || "Points",
               confidence_level: analysisData.confidence_level || 0, // Default to 0 if not found
-              reason: analysisData.reason || { // Default to empty object if not found
-                "1": "",
-                "2": "",
-                "3": "",
-                "4": "",
-                "5": "",
+              reason: { // Map reason_1, reason_2, reason_3, reason_4, and final_conclusion
+                "1": analysisData.reason_1 || "", // Map reason_1
+                "2": analysisData.reason_2 || "", // Map reason_2
+                "3": analysisData.reason_3 || "", // Map reason_3
+                "4": analysisData.reason_4 || "", // Map reason_4
+                "final_conclusion": analysisData.final_conclusion || "", // Map final_conclusion
               },
             };
           })
@@ -420,7 +420,7 @@ export default function Home() {
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="modal p-6 w-11/12 sm:max-w-lg relative"
+            className="modal p-4 w-11/12 sm:max-w-2xl relative bg-gray-800 rounded-lg overflow-y-auto max-h-[90vh]" // Increased width and added scroll
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.9 }}
@@ -434,70 +434,80 @@ export default function Home() {
             <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
               {selectedPlayer.displayName} ({selectedPlayer.position} - {selectedPlayer.team})
             </h2>
-            <div className="bg-gray-700 p-4 rounded-lg mb-6">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-gray-700 p-3 rounded-lg mb-4"> {/* Reduced padding */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2"> {/* Reduced gap */}
                 <div className="flex flex-col items-center">
-                  <span className="text-orange-400 text-lg font-semibold">Confidence</span>
-                  <span className="text-white text-2xl font-bold">
+                  <span className="text-orange-400 text-sm font-semibold">Confidence</span> {/* Reduced font size */}
+                  <span className="text-white text-xl font-bold"> {/* Reduced font size */}
                     {selectedPlayer.confidence_level || 0}
                   </span>
                 </div>
                 <div className="flex flex-col items-center">
-                  <span className="text-orange-400 text-lg font-semibold">Line</span>
-                  <span className="text-white text-2xl font-bold">
-                    {selectedPlayer.prop_line} <span className="text-sm text-gray-400">points</span>
+                  <span className="text-orange-400 text-sm font-semibold">Line</span> {/* Reduced font size */}
+                  <span className="text-white text-xl font-bold"> {/* Reduced font size */}
+                    {selectedPlayer.prop_line} <span className="text-xs text-gray-400">points</span> {/* Reduced font size */}
                   </span>
                 </div>
                 <div className="flex flex-col items-center">
-                  <span className="text-orange-400 text-lg font-semibold">Stat</span>
-                  <span className="text-white text-2xl font-bold">
+                  <span className="text-orange-400 text-sm font-semibold">Stat</span> {/* Reduced font size */}
+                  <span className="text-white text-xl font-bold"> {/* Reduced font size */}
                     {selectedPlayer.stat_type}
                   </span>
                 </div>
               </div>
             </div>
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold text-orange-400 mb-4">
+            <div className="mt-4"> {/* Reduced margin */}
+              <h3 className="text-lg font-semibold text-orange-400 mb-2"> {/* Reduced margin */}
                 🧠 Reason Breakdown
               </h3>
-              <div className="bg-gray-700 p-4 rounded-lg">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-gray-300">
+              <div className="bg-gray-700 p-3 rounded-lg"> {/* Reduced padding */}
+                <div className="flex items-center justify-between mb-2"> {/* Reduced margin */}
+                  <span className="text-gray-300 text-sm"> {/* Reduced font size */}
                     {reasonIndex === 1 && "📊 Performance Against Opposing Team"}
                     {reasonIndex === 2 && "📈 Scoring Trends"}
-                    {reasonIndex === 3 && "🛠️ Role & Teammate Interactions"}
-                    {reasonIndex === 4 && "🔍 Recent Game Flow Analysis"}
-                    {reasonIndex === 5 && "🏆 Final Reason for Confidence Level"}
+                    {reasonIndex === 3 && "🛠️ Opposing Team's Defensive Weaknesses"}
+                    {reasonIndex === 4 && "🔍 Recent Performance"}
                   </span>
-                  <span className="text-gray-400 text-sm">
-                    Section {reasonIndex} of 5
+                  <span className="text-gray-400 text-xs"> {/* Reduced font size */}
+                    Section {reasonIndex} of 4
                   </span>
                 </div>
-                <p className="text-white text-lg">
+                <p className="text-white text-sm"> {/* Reduced font size */}
                   {cleanReasonText(selectedPlayer.reason[String(reasonIndex)] || "No text available.")}
                 </p>
               </div>
-              <div className="flex justify-between mt-4">
+              <div className="flex justify-between mt-2"> {/* Reduced margin */}
                 {reasonIndex > 1 && (
                   <button
-                    className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 flex items-center"
+                    className="px-3 py-1 bg-gray-700 text-white rounded-lg hover:bg-gray-600 flex items-center text-sm" 
                     onClick={handlePrevReason}
                   >
-                    <span className="mr-2">&larr;</span> Previous
+                    <span className="mr-1">&larr;</span> Previous
                   </button>
                 )}
-                {reasonIndex < 5 && (
+                {reasonIndex < 4 && (
                   <button
-                    className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 flex items-center"
+                    className="px-3 py-1 bg-gray-700 text-white rounded-lg hover:bg-gray-600 flex items-center text-sm"
                     onClick={handleNextReason}
                   >
-                    Next <span className="ml-2">&rarr;</span>
+                    Next <span className="ml-1">&rarr;</span>
                   </button>
                 )}
               </div>
+              {/* Display Final Conclusion */}
+              <div className="mt-4"> {/* Reduced margin */}
+                <h3 className="text-lg font-semibold text-orange-400 mb-2"> {/* Reduced margin */}
+                  🏆 Final Conclusion
+                </h3>
+                <div className="bg-gray-700 p-3 rounded-lg"> {/* Reduced padding */}
+                  <p className="text-white text-sm"> {/* Reduced font size */}
+                    {cleanReasonText(selectedPlayer.reason["final_conclusion"] || "No final conclusion available.")}
+                  </p>
+                </div>
+              </div>
             </div>
             <button
-              className="mt-6 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors w-full"
+              className="mt-4 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors w-full text-sm"
               onClick={() => setSelectedPlayer(null)}
             >
               Close

@@ -521,7 +521,7 @@ async def main():
 
     # Set semaphore limit to the number of player props
     global semaphore
-    semaphore = asyncio.Semaphore(len(enriched_data))
+    semaphore = asyncio.Semaphore(4)
 
     tasks = [analyze_player(player) for player in enriched_data]
     results = await asyncio.gather(*tasks)

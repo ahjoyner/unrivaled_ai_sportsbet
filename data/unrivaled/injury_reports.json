@@ -1,12 +1,6 @@
 {
     "injury_reports": [
       {
-        "team": "LUNAR OWLS",
-        "player": "Allisha Gray",
-        "status": "PROBABLE",
-        "injury": "Concussion Protocol"
-      },
-      {
         "team": "ROSE",
         "player": "Kahleah Copper",
         "status": "OUT",
@@ -19,26 +13,20 @@
         "injury": "R Leg"
       },
       {
-        "team": "ROSE",
-        "player": "Chelsea Gray",
-        "status": "QUESTIONABLE",
-        "injury": "L Leg"
-      },
-      {
-        "team": "VINYL",
-        "player": "Jordin Canada",
-        "status": "PROBABLE",
-        "injury": "Illness"
-      },
-      {
-        "team": "LACES",
-        "player": "Tiffany Hayes",
+        "team": "PHANTOM",
+        "player": "Sabrina Ionescu",
         "status": "OUT",
-        "injury": "Concussion Protocol"
+        "injury": "Personal"
+      },
+      {
+        "team": "PHANTOM",
+        "player": "Marina Mabrey",
+        "status": "PROBABLE",
+        "injury": "R Calf"
       },
       {
         "team": "LACES",
-        "player": "Jackie Young",
+        "player": "Kate Martin",
         "status": "OUT",
         "injury": "L Leg"
       }
