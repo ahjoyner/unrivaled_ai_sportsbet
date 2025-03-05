@@ -5,7 +5,7 @@ import asyncio
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 @retry(
-    stop=stop_after_attempt(3),  # Retry up to 3 times
+    stop=stop_after_attempt(5),  # Retry up to 3 times
     wait=wait_exponential(multiplier=1, min=4, max=10),  # Exponential backoff
     retry=retry_if_exception_type(Exception),  # Retry on any exception
 )
