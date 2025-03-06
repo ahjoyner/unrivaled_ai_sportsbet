@@ -18,12 +18,13 @@ async def analyze_player(player):
         player_team = player["player_data"]["team"]
         opposing_team = player["projection_data"]["description"]
         player_prop = player["projection_data"]["line_score"]
+        stat_type = player["projection_data"]["stat_type"]  # Get the stat type from projection data
         
         # Fetch player data from Firebase
         player_ref = db.collection("players").document(player_name)
 
-        # Check if there's already an analysis for this player
-        analysis_results_ref = player_ref.collection("analysis_results").document("latest")
+        # Check if there's already an analysis for this player and stat type
+        analysis_results_ref = player_ref.collection("analysis_results").document(f"{stat_type.lower()}_latest")
         latest_analysis = analysis_results_ref.get().to_dict()
 
         if latest_analysis:
@@ -36,8 +37,8 @@ async def analyze_player(player):
                 current_date = datetime.now()
                 # Check if the analysis is from the same day
                 if analysis_date.date() == current_date.date():
-                    print(f"Skipping {player_name} - Analysis already exists for today.", file=sys.stderr)
-                    return None  # Skip this player
+                    print(f"Skipping {player_name} ({stat_type}) - Analysis already exists for today.", file=sys.stderr)
+                    return None  # Skip this player and stat type
                 
         if not player_team:
             print(f"No team found for player: {player_name}", file=sys.stderr)
@@ -61,26 +62,26 @@ async def analyze_player(player):
                 injury_reports = fetch_injury_reports()  # Doesn't need async
 
                 # Log inputs for debugging
-                print(f"Inputs for {player_name}:")
+                print(f"Inputs for {player_name} ({stat_type}):")
                 print(f"Game Flow Analyses: {game_flow_analyses}")
                 print(f"Past Performance Analysis: {past_performance_analysis}")
                 print(f"Injury Reports: {injury_reports}")
 
                 # Call final DeepSeek API request
-                print("Starting final analysis for player:", player_name)
+                print(f"Starting final analysis for player: {player_name} ({stat_type})")
                 final_analysis = await calculate_final_confidence_level(
-                    session, player_name, player_team, past_performance_analysis, player_prop, opposing_team, injury_reports
+                    session, player_name, player_team, past_performance_analysis, player_prop, opposing_team, injury_reports, stat_type
                 )
-                print("Final analysis completed for player:", player_name)
+                print(f"Final analysis completed for player: {player_name} ({stat_type})")
 
                 if final_analysis:
-                    print(f"Final Analysis for {player_name}:\n{final_analysis}")
+                    print(f"Final Analysis for {player_name} ({stat_type}):\n{final_analysis}")
                     return final_analysis
                 else:
-                    print(f"Failed to generate final analysis for {player_name}.")
+                    print(f"Failed to generate final analysis for {player_name} ({stat_type}).")
                     return None
             except Exception as e:
-                print(f"Error analyzing player {player_name}: {e}", file=sys.stderr)
+                print(f"Error analyzing player {player_name} ({stat_type}): {e}", file=sys.stderr)
                 return None
 
 async def main():
@@ -90,16 +91,20 @@ async def main():
     prop_lines_ref = db.collection("prop_lines").stream()
     enriched_data = [{"player_data": doc.to_dict().get("player_data", {}), "projection_data": doc.to_dict().get("projection_data", {})} for doc in prop_lines_ref]
     
-    # Create a list of tasks for analyzing each player asynchronously
+    # Create a list of tasks for analyzing each player and stat type asynchronously
     tasks = [analyze_player(player) for player in enriched_data]
 
     # Run all tasks concurrently using asyncio.gather
     results = await asyncio.gather(*tasks)
 
-    # Map results to player names
+    # Map results to player names and stat types
     output = {}
     for player, result in zip(enriched_data, results):
-        output[player["player_data"]["name"]] = {"analysis": result} if result else {"analysis": "No analysis available."}
+        player_name = player["player_data"]["name"]
+        stat_type = player["projection_data"]["stat_type"]
+        if player_name not in output:
+            output[player_name] = {}
+        output[player_name][stat_type] = {"analysis": result} if result else {"analysis": "No analysis available."}
 
     # Print the final output
     print(json.dumps(output, indent=4))

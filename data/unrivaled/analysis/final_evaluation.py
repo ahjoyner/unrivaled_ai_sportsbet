@@ -12,7 +12,7 @@ from datetime import datetime  # Import datetime for timestamp functionality
     wait=wait_exponential(multiplier=1, min=4, max=10),  # Exponential backoff
     retry=retry_if_exception_type(Exception),  # Retry on any exception
 )
-async def calculate_final_confidence_level(session, player_name, player_team, past_performance_analysis, player_prop, opposing_team, injury_reports):
+async def calculate_final_confidence_level(session, player_name, player_team, past_performance_analysis, player_prop, opposing_team, injury_reports, stat_type):
     # Add a delay to avoid rate limiting
     await asyncio.sleep(1)  # 1-second delay between requests
 
@@ -20,8 +20,8 @@ async def calculate_final_confidence_level(session, player_name, player_team, pa
     player_ref = db.collection("players").document(player_name)
     player_stats = player_ref.get().to_dict()
 
-    # Check if there's already an analysis for this player
-    analysis_results_ref = player_ref.collection("analysis_results").document("latest")
+    # Check if there's already an analysis for this player and stat type
+    analysis_results_ref = player_ref.collection("analysis_results").document(f"{stat_type.lower()}_latest")
     latest_analysis = analysis_results_ref.get().to_dict()
 
     if latest_analysis:
@@ -30,11 +30,12 @@ async def calculate_final_confidence_level(session, player_name, player_team, pa
         if analysis_timestamp:
             # Convert the timestamp to a datetime object
             analysis_date = datetime.fromisoformat(analysis_timestamp)
+            final_conclusion = latest_analysis.get("final_conclusion", "")
             # Get the current date
             current_date = datetime.now()
             # Check if the analysis is from the same day
-            if analysis_date.date() == current_date.date():
-                print(f"Skipping {player_name} - Analysis already exists for today.", file=sys.stderr)
+            if analysis_date.date() == current_date.date() and final_conclusion != "":
+                print(f"Skipping {player_name} - Analysis already exists for today for stat type {stat_type}.", file=sys.stderr)
                 return None  # Skip this player
 
     # If no analysis exists or it's not from today, proceed with the analysis
@@ -115,7 +116,7 @@ async def calculate_final_confidence_level(session, player_name, player_team, pa
                     f"Recent Performance (Last 5 Games):\n"
                     f"{json.dumps(recent_games, indent=2)}\n\n"
                     f"Injury Reports:\n{injury_context}\n\n"
-                    f"Player Prop: {player_prop} points\n\n"
+                    f"Player Prop: {player_prop} {stat_type.lower()}\n\n"
                     f"Opposing Team: {opposing_team}\n\n"
                     "Provide a definitive confidence level (0-100) and 4 detailed reasons for taking the over or under on the player's prop line, as well as a final summary. "
                     "The confidence level should reflect a strong belief in the outcome, with 0-25 indicating an extreme under, 26-50 indicating a moderate under, 51-75 indicating a moderate over, and 76-100 indicating an extreme over. "
@@ -131,7 +132,8 @@ async def calculate_final_confidence_level(session, player_name, player_team, pa
                     "- The player's consistency in scoring above the prop line in past encounters with the opposing team.\n"
                     "- The player's role in their team and how it affects their scoring opportunities.\n"
                     "- The player's recent performance trends over the last 5 games.\n\n"
-                    "Example format for reasons:\n"
+                    "Assume if all stats are 0, then they DNP in that game.\n\n"
+                    "Example format for reasons (make sure it's for the proper stat, not just points. Use what is necessary):\n"
                     "Reason 1 (Performance Against Opposing Team): {opposing_team} allowed {points_allowed} points this season. On top of this, {player_name} has scored above the prop line consistently in each of their past encounters with {opposing_team}, averaging {average_points_against_opponent} points per game. This suggests a favorable matchup for {player_name}.\n"
                     "Reason 2 (Scoring Trends - Clutch Performance in Critical Moments, Hot/Cold Streaks): {player_name} has shown a tendency to elevate their game in critical moments, particularly in the second half. In their last three games, they have had strong fourth-quarter performances, including an 8-point burst in one game and multiple three-pointers in another. This indicates they have the potential to exceed the prop line, especially if the game is close.\n"
                     "Reason 3 (Opposing Team's Defensive Weaknesses): {opposing_team} is missing key players like {injured_player} due to injuries, which could weaken their perimeter defense and rebounding. {player_name}'s strength in three-point shooting ({three_point_percentage}% against {opposing_team}) could be even more effective against a depleted defense. Additionally, {opposing_team}'s defensive rebounding may suffer without {injured_player}, potentially giving {player_name} more opportunities for second-chance points or open looks.\n"
@@ -187,8 +189,8 @@ async def calculate_final_confidence_level(session, player_name, player_team, pa
                             i += 1
 
                     if confidence_level is not None and len(reasons) == 4 and final_conclusion is not None:
-                        # Save the results to Firebase under the "latest" document
-                        analysis_results_ref = player_ref.collection("analysis_results").document("latest")
+                        # Save the results to Firebase under the "{stat_type}_latest" document
+                        analysis_results_ref = player_ref.collection("analysis_results").document(f"{stat_type.lower()}_latest")
                         analysis_results_ref.set({
                             "confidence_level": confidence_level,
                             "reason_1": reasons[0],

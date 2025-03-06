@@ -46,6 +46,7 @@ def upload_to_firestore(collection_name, player_id, stat_type, data):
     retry=retry_if_exception_type(RequestException),  # Retry on RequestException
 )
 def fetch_player_data(player_id):
+    time.sleep(2)
     """Fetch player data from the API with retry functionality."""
     url = f"https://api.prizepicks.com/players/{player_id}"
     try:

@@ -32,7 +32,9 @@ const normalizeName = (name) => {
 };
 
 const cleanReasonText = (text) => {
-  return text.replace(/^\*\*.*:\*\*\s*/, "").replace(/^\*\*.*\*\*:\s*/, "");
+  return text
+    .replace(/^\*\*.*:\*\*\s*/, "") // Remove leading **Reason X:**
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>"); // Replace **text** with <strong>text</strong>
 };
 
 const StatItem = ({ label, value, icon, unit, isShootingStat }) => (
@@ -53,6 +55,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+  const [inDepthModal, setInDepthModal] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [confidenceData, setConfidenceData] = useState({});
   const [last5GamesModal, setLast5GamesModal] = useState(null);
@@ -108,9 +111,10 @@ export default function Home() {
             const normalizedName = normalizeName(playerData.display_name);
             const playerInfo = playersMap.get(normalizedName) || {};
 
-            // Fetch analysis results for the player from players/{player_name}/analysis_results/latest
+            // Fetch analysis results for the player from players/{player_name}/analysis_results/{stat_type}_latest
             const playerNameFirestore = playerData.display_name.replace(/ /g, "_");
-            const analysisDocRef = doc(db, `players/${playerNameFirestore}/analysis_results`, "latest"); // Use "latest" as the document ID
+            const statType = projectionData.stat_type || "Points"; // Default to Points if not specified
+            const analysisDocRef = doc(db, `players/${playerNameFirestore}/analysis_results`, `${statType.toLowerCase()}_latest`);
             const analysisSnapshot = await getDoc(analysisDocRef);
             const analysisData = analysisSnapshot.exists() ? analysisSnapshot.data() : {};
 
@@ -122,7 +126,7 @@ export default function Home() {
               position: playerData.position || "N/A",
               headshot_url: playerInfo.headshot_url || null, // Get headshot_url from players collection
               prop_line: projectionData.line_score || 0,
-              stat_type: projectionData.stat_type || "Points",
+              stat_type: statType, // Use the stat type from projection data
               confidence_level: analysisData.confidence_level || 0, // Default to 0 if not found
               reason: { // Map reason_1, reason_2, reason_3, reason_4, and final_conclusion
                 "1": analysisData.reason_1 || "", // Map reason_1
@@ -156,7 +160,8 @@ export default function Home() {
       for (const player of players) {
         try {
           const playerNameFirestore = player.displayName.replace(/ /g, "_");
-          const analysisDoc = doc(db, `players/${playerNameFirestore}/analysis_results`, "latest"); // Use "latest" as the document ID
+          const statType = player.stat_type || "Points"; // Default to Points if not specified
+          const analysisDoc = doc(db, `players/${playerNameFirestore}/analysis_results`, `${statType.toLowerCase()}_latest`);
           const analysisSnapshot = await getDoc(analysisDoc);
           if (analysisSnapshot.exists()) {
             updatedResults[player.id] = analysisSnapshot.data();
@@ -227,7 +232,7 @@ export default function Home() {
     }
   };
 
-  // Render the Last 5 Games Modal (updated to handle stat-specific data)
+  // Render the Last 5 Games Modal
   const renderLast5GamesModal = () => {
     if (!last5GamesModal) return null;
 
@@ -601,7 +606,7 @@ export default function Home() {
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="modal p-4 w-11/12 sm:max-w-2xl relative bg-gray-800 rounded-lg overflow-y-auto max-h-[90vh]"
+            className="modal p-4 w-11/12 sm:max-w-md relative bg-gray-800 rounded-lg overflow-y-auto max-h-[90vh]"
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.9 }}
@@ -639,6 +644,83 @@ export default function Home() {
             </div>
             <div className="mt-4">
               <h3 className="text-lg font-semibold text-orange-400 mb-2">
+                🏆 Final Conclusion
+              </h3>
+              <div className="bg-gray-700 p-3 rounded-lg">
+                <p
+                  className="text-white text-sm"
+                  dangerouslySetInnerHTML={{
+                    __html: cleanReasonText(selectedPlayer.reason["final_conclusion"] || "No final conclusion available."),
+                  }}
+                />
+              </div>
+            </div>
+            <button
+              className="mt-4 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors w-full text-sm"
+              onClick={() => {
+                setInDepthModal(selectedPlayer); // Open the in-depth modal
+                setSelectedPlayer(null); // Close the final conclusion modal
+              }}
+            >
+              Go More In Depth
+            </button>
+            <button
+              className="mt-2 bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors w-full text-sm"
+              onClick={() => setSelectedPlayer(null)}
+            >
+              Close
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* In-Depth Modal */}
+      {inDepthModal && (
+        <motion.div
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            className="modal p-4 w-11/12 sm:max-w-2xl relative bg-gray-800 rounded-lg overflow-y-auto max-h-[90vh]"
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            exit={{ scale: 0.9 }}
+          >
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-300"
+              onClick={() => setInDepthModal(null)}
+            >
+              &times;
+            </button>
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
+              {inDepthModal.displayName} ({inDepthModal.position} - {inDepthModal.team})
+            </h2>
+            <div className="bg-gray-700 p-3 rounded-lg mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="flex flex-col items-center">
+                  <span className="text-orange-400 text-sm font-semibold">Confidence</span>
+                  <span className="text-white text-xl font-bold">
+                    {inDepthModal.confidence_level || 0}
+                  </span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-orange-400 text-sm font-semibold">Line</span>
+                  <span className="text-white text-xl font-bold">
+                    {inDepthModal.prop_line} <span className="text-xs text-gray-400">{inDepthModal.stat_type.toLowerCase()}</span>
+                  </span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-orange-400 text-sm font-semibold">Stat</span>
+                  <span className="text-white text-xl font-bold">
+                    {inDepthModal.stat_type}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4">
+              <h3 className="text-lg font-semibold text-orange-400 mb-2">
                 🧠 Reason Breakdown
               </h3>
               <div className="bg-gray-700 p-3 rounded-lg">
@@ -653,9 +735,12 @@ export default function Home() {
                     Section {reasonIndex} of 4
                   </span>
                 </div>
-                <p className="text-white text-sm">
-                  {cleanReasonText(selectedPlayer.reason[String(reasonIndex)] || "No text available.")}
-                </p>
+                <p
+                  className="text-white text-sm"
+                  dangerouslySetInnerHTML={{
+                    __html: cleanReasonText(inDepthModal.reason[String(reasonIndex)] || "No text available."),
+                  }}
+                />
               </div>
               <div className="flex justify-between mt-2">
                 {reasonIndex > 1 && (
@@ -675,21 +760,10 @@ export default function Home() {
                   </button>
                 )}
               </div>
-              {/* Display Final Conclusion */}
-              <div className="mt-4">
-                <h3 className="text-lg font-semibold text-orange-400 mb-2">
-                  🏆 Final Conclusion
-                </h3>
-                <div className="bg-gray-700 p-3 rounded-lg">
-                  <p className="text-white text-sm">
-                    {cleanReasonText(selectedPlayer.reason["final_conclusion"] || "No final conclusion available.")}
-                  </p>
-                </div>
-              </div>
             </div>
             <button
               className="mt-4 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors w-full text-sm"
-              onClick={() => setSelectedPlayer(null)}
+              onClick={() => setInDepthModal(null)}
             >
               Close
             </button>
@@ -709,7 +783,7 @@ export default function Home() {
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="modal p-6 w-11/12 sm:max-w-2xl relative max-h-[90vh] overflow-y-auto"
+            className="modal p-6 w-11/12 sm:max-w-md relative max-h-[90vh] overflow-y-auto"
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.9 }}
@@ -717,7 +791,7 @@ export default function Home() {
             <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 mobile-smaller-heading">
               🏀 Game Stats for {gameStatsModal.player_name} vs. {gameStatsModal.opponent}
             </h2>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-4">
               <div className="bg-gray-700 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold text-orange-400 mb-3 mobile-smaller-heading">Basic Stats</h3>
                 <div className="space-y-2">
@@ -740,9 +814,7 @@ export default function Home() {
                   />
                   <StatItem
                     label="Field Goal %"
-                    value={(
-                      (gameStatsModal.fg_m / gameStatsModal.fg_a * 100).toFixed(1))
-                    }
+                    value={((gameStatsModal.fg_m / gameStatsModal.fg_a) * 100).toFixed(1)}
                     unit="%"
                   />
                   <StatItem 
@@ -752,9 +824,7 @@ export default function Home() {
                   />
                   <StatItem
                     label="3-Point %"
-                    value={(
-                      (gameStatsModal.three_pt_m / gameStatsModal.three_pt_a * 100).toFixed(1))
-                    }
+                    value={((gameStatsModal.three_pt_m / gameStatsModal.three_pt_a) * 100).toFixed(1)}
                     unit="%"
                   />
                   <StatItem 
@@ -764,16 +834,14 @@ export default function Home() {
                   />
                   <StatItem
                     label="Free Throw %"
-                    value={(
-                      (gameStatsModal.ft_m / gameStatsModal.ft_a * 100).toFixed(1))
-                    }
+                    value={((gameStatsModal.ft_m / gameStatsModal.ft_a) * 100).toFixed(1)}
                     unit="%"
                   />
                 </div>
               </div>
-              <div className="bg-gray-700 p-4 rounded-lg col-span-full">
+              <div className="bg-gray-700 p-4 rounded-lg">
                 <h3 className="text-lg font-semibold text-orange-400 mb-3 mobile-smaller-heading">Advanced Stats</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <StatItem label="Minutes Played" value={gameStatsModal.min} unit="min" />
                   <StatItem label="Offensive Rebounds" value={gameStatsModal.offensive_rebounds} />
                   <StatItem label="Defensive Rebounds" value={gameStatsModal.defensive_rebounds} />
@@ -782,7 +850,7 @@ export default function Home() {
               </div>
             </div>
             <button
-              className="mt-6 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+              className="mt-6 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors w-full"
               onClick={() => setGameStatsModal(null)}
             >
               Close
