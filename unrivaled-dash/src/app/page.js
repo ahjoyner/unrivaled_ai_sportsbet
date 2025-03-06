@@ -175,42 +175,182 @@ export default function Home() {
   // Fetch last 5 games from Firestore
   const openLast5GamesModal = async (player) => {
     try {
-      // Replace spaces with underscores in the player name
       const playerNameFirestore = player.displayName.replace(/ /g, "_");
-  
+
       // Fetch the most recent 5 games for the player from players/{player_name}/games
       const gamesCollection = collection(db, `players/${playerNameFirestore}/games`);
-      console.log(`Querying collection: players/${playerNameFirestore}/games`);
-  
-      // Query to get the most recent 5 games sorted by game_date in descending order
       const gamesQuery = query(
         gamesCollection,
         orderBy("game_date", "desc"), // Sort by game_date in descending order
         limit(5) // Limit to 5 most recent games
       );
-  
+
       const gamesSnapshot = await getDocs(gamesQuery);
-      console.log("Games Snapshot:", gamesSnapshot); // Debugging: Log the snapshot
-  
+
       if (gamesSnapshot.empty) {
         console.log("No games found for player:", playerNameFirestore);
         return;
       }
-  
+
       const gamesData = gamesSnapshot.docs.map((doc) => {
         const gameData = doc.data();
-        console.log("Game Data:", gameData); // Debugging: Log each game's data
         return {
           game_id: doc.id,
           ...gameData, // This includes the stats field
         };
       });
-  
+
+      // Calculate the stat-specific data for the last 5 games
+      const statData = gamesData.map((game) => {
+        switch (player.stat_type) {
+          case "Points":
+            return game.pts || 0; // Points
+          case "Rebounds":
+            return game.reb || 0; // Rebounds
+          case "Assists":
+            return game.ast || 0; // Assists
+          case "Pts+Rebs+Asts":
+            return (game.pts || 0) + (game.reb || 0) + (game.ast || 0); // Pts+Rebs+Asts
+          default:
+            return 0; // Fallback
+        }
+      });
+
       console.log("Fetched last 5 games for", playerNameFirestore, gamesData);
-      setLast5GamesModal({ ...player, last_5_games: gamesData });
+      setLast5GamesModal({
+        ...player,
+        last_5_games: gamesData,
+        stat_data: statData, // Stat-specific data for the chart
+      });
     } catch (error) {
       console.error("Error fetching last 5 games:", error);
     }
+  };
+
+  // Render the Last 5 Games Modal (updated to handle stat-specific data)
+  const renderLast5GamesModal = () => {
+    if (!last5GamesModal) return null;
+
+    const games = last5GamesModal.last_5_games || [];
+    const statData = last5GamesModal.stat_data || [];
+    const statType = last5GamesModal.stat_type;
+
+    // Reverse the games array to display oldest to newest (left to right)
+    const reversedGames = [...games].reverse();
+    const reversedStatData = [...statData].reverse();
+
+    // Extract labels (dates) and data (stat-specific)
+    const labels = reversedGames.map((game) => {
+      if (game.game_date) {
+        const gameDate = game.game_date.toDate ? game.game_date.toDate() : new Date(game.game_date);
+        return gameDate.toLocaleDateString("en-US", { timeZone: "UTC" });
+      } else {
+        return "No Date"; // Fallback for missing or invalid dates
+      }
+    });
+
+    const chartData = {
+      labels: labels,
+      datasets: [
+        {
+          label: statType, // Dynamic label based on stat type
+          data: reversedStatData,
+          backgroundColor: reversedStatData.map((value) =>
+            value >= last5GamesModal.prop_line ? "rgba(75, 192, 192, 0.6)" : "rgba(255, 99, 132, 0.6)"
+          ),
+          borderColor: reversedStatData.map((value) =>
+            value >= last5GamesModal.prop_line ? "rgba(75, 192, 192, 1)" : "rgba(255, 99, 132, 1)"
+          ),
+          borderWidth: 1,
+        },
+      ],
+    };
+
+    const chartOptions = {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: false,
+        },
+        title: {
+          display: true,
+          text: `${statType} in Last 5 Games`, // Dynamic title based on stat type
+          color: "#fff",
+        },
+        annotation: {
+          annotations: {
+            propLine: {
+              type: "line",
+              yMin: last5GamesModal.prop_line,
+              yMax: last5GamesModal.prop_line,
+              borderColor: "rgba(255, 255, 255, 0.5)",
+              borderWidth: 2,
+              borderDash: [10, 5],
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: "#fff",
+          },
+          grid: {
+            color: "rgba(255, 255, 255, 0.1)",
+          },
+        },
+        y: {
+          ticks: {
+            color: "#fff",
+          },
+          grid: {
+            color: "rgba(255, 255, 255, 0.1)",
+          },
+        },
+      },
+      onClick: (event, elements) => {
+        if (elements.length > 0) {
+          const clickedIndex = elements[0].index;
+          const clickedGame = reversedGames[clickedIndex]; // Use reversedGames for correct index
+          fetchGameStats(clickedGame.game_id, last5GamesModal.displayName);
+        }
+      },
+    };
+
+    return (
+      <motion.div
+        className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
+        <motion.div
+          className="modal p-6 w-11/12 sm:max-w-lg relative"
+          initial={{ scale: 0.9 }}
+          animate={{ scale: 1 }}
+          exit={{ scale: 0.9 }}
+        >
+          <button
+            className="absolute top-4 right-4 text-gray-400 hover:text-gray-300"
+            onClick={() => setLast5GamesModal(null)}
+          >
+            &times;
+          </button>
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
+            {last5GamesModal.displayName}&apos;s Last 5 Games ({statType})
+          </h2>
+          <div className="chart-container">
+            <Bar data={chartData} options={chartOptions} />
+          </div>
+          <button
+            className="mt-4 bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+            onClick={() => setLast5GamesModal(null)}
+          >
+            Close
+          </button>
+        </motion.div>
+      </motion.div>
+    );
   };
 
   // Fetch game stats from Firestore
@@ -305,20 +445,24 @@ export default function Home() {
 
   // Render the tabs
   const renderTabs = () => (
-    <div className="flex justify-center gap-2 mb-6">
-      {statTabs.map((stat) => (
-        <button
-          key={stat}
-          className={`px-4 py-2 rounded-lg transition-colors ${
-            selectedStat === stat
-              ? "bg-orange-500 text-white"
-              : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-          }`}
-          onClick={() => setSelectedStat(stat)}
-        >
-          {stat}
-        </button>
-      ))}
+    <div className="fixed top-16 left-0 w-full bg-gray-900 py-2 z-40 shadow-md"> {/* Fixed position above player boxes */}
+      <div className="container mx-auto px-4">
+        <div className="flex gap-2">
+          {statTabs.map((stat) => (
+            <button
+              key={stat}
+              className={`px-3 py-1 rounded-lg transition-colors text-sm ${
+                selectedStat === stat
+                  ? "bg-orange-500 text-white"
+                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+              }`}
+              onClick={() => setSelectedStat(stat)}
+            >
+              {stat}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 
@@ -346,31 +490,32 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
       {/* Header */}
       <header className="fixed top-0 left-0 w-full bg-gradient-to-r from-blue-600 to-purple-600 py-4 shadow-lg z-50">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <h1 className="text-xl sm:text-3xl font-bold text-white flex items-center">
-            <img src="/logo.jpg" alt="MOD-Duel Logo" className="h-8 sm:h-10 mr-2 rounded-full" />
-            MOD-Duel Prop Confidence
-          </h1>
-          <input
-            type="text"
-            placeholder="Search players..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white w-32 sm:w-64 placeholder:text-white/70"
-          />
+        <div className="container mx-auto px-4 flex flex-col gap-2">
+          <div className="flex justify-between items-center">
+            <h1 className="text-xl sm:text-3xl font-bold text-white flex items-center">
+              <img src="/logo.jpg" alt="MOD-Duel Logo" className="h-8 sm:h-10 mr-2 rounded-full" />
+              MOD-Duel Prop Confidence
+            </h1>
+            <input
+              type="text"
+              placeholder="Search players..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white w-32 sm:w-64 placeholder:text-white/70"
+            />
+          </div>
+          {/* Render the tabs */}
+          {renderTabs()}
         </div>
       </header>
 
       {/* Main Content */}
       <motion.div
-        className="container mx-auto p-4 sm:p-8 pt-24 sm:pt-32 relative z-10"
+        className="container mx-auto p-4 sm:p-8 pt-32 sm:pt-40 relative z-10" // Increased top padding for mobile
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Render the tabs */}
-        {renderTabs()}
-
         {/* Render the players filtered by selected stat */}
         <div className={`grid ${isMobile ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-4 sm:gap-6`}>
           {playersForSelectedStat.length > 0 ? (
@@ -552,138 +697,8 @@ export default function Home() {
         </motion.div>
       )}
 
-      {/* Last 5 Games Modal */}
-      {last5GamesModal && (
-        <motion.div
-          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-        >
-          <motion.div
-            className="modal p-6 w-11/12 sm:max-w-lg relative"
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            exit={{ scale: 0.9 }}
-          >
-            <button
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-300"
-              onClick={() => setLast5GamesModal(null)}
-            >
-              &times;
-            </button>
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
-              {last5GamesModal.displayName}&apos;s Last 5 Games
-            </h2>
-            {(() => {
-              const games = last5GamesModal.last_5_games || [];
-
-              // Reverse the games array to display oldest to newest (left to right)
-              const reversedGames = [...games].reverse();
-
-              // Debugging: Log the fetched games
-              console.log("Fetched Games (Reversed):", reversedGames);
-
-              // Extract labels (dates) and data (points)
-              const labels = reversedGames.map((game) => {
-                if (game.game_date) {
-                  const gameDate = game.game_date.toDate ? game.game_date.toDate() : new Date(game.game_date);
-                  // Use UTC to avoid timezone issues
-                  return gameDate.toLocaleDateString("en-US", { timeZone: "UTC" });
-                } else {
-                  return "No Date"; // Fallback for missing or invalid dates
-                }
-              });
-
-              const data = reversedGames.map((game) => Number(game.pts || 0)); // Fallback to 0 if pts is missing
-
-              // Debugging: Log the labels and data
-              console.log("Labels (Reversed):", labels);
-              console.log("Data (Reversed):", data);
-
-              const chartData = {
-                labels: labels,
-                datasets: [
-                  {
-                    label: "Points",
-                    data: data,
-                    backgroundColor: data.map((pts) =>
-                      pts >= last5GamesModal.prop_line ? "rgba(75, 192, 192, 0.6)" : "rgba(255, 99, 132, 0.6)"
-                    ),
-                    borderColor: data.map((pts) =>
-                      pts >= last5GamesModal.prop_line ? "rgba(75, 192, 192, 1)" : "rgba(255, 99, 132, 1)"
-                    ),
-                    borderWidth: 1,
-                  },
-                ],
-              };
-
-              const chartOptions = {
-                responsive: true,
-                plugins: {
-                  legend: {
-                    display: false,
-                  },
-                  title: {
-                    display: true,
-                    text: "Points in Last 5 Games",
-                    color: "#fff",
-                  },
-                  annotation: {
-                    annotations: {
-                      propLine: {
-                        type: "line",
-                        yMin: last5GamesModal.prop_line,
-                        yMax: last5GamesModal.prop_line,
-                        borderColor: "rgba(255, 255, 255, 0.5)",
-                        borderWidth: 2,
-                        borderDash: [10, 5],
-                      },
-                    },
-                  },
-                },
-                scales: {
-                  x: {
-                    ticks: {
-                      color: "#fff",
-                    },
-                    grid: {
-                      color: "rgba(255, 255, 255, 0.1)",
-                    },
-                  },
-                  y: {
-                    ticks: {
-                      color: "#fff",
-                    },
-                    grid: {
-                      color: "rgba(255, 255, 255, 0.1)",
-                    },
-                  },
-                },
-                onClick: (event, elements) => {
-                  if (elements.length > 0) {
-                    const clickedIndex = elements[0].index;
-                    const clickedGame = reversedGames[clickedIndex]; // Use reversedGames for correct index
-                    fetchGameStats(clickedGame.game_id, last5GamesModal.displayName);
-                  }
-                },
-              };
-
-              return (
-                <div className="chart-container">
-                  <Bar data={chartData} options={chartOptions} />
-                </div>
-              );
-            })()}
-            <button
-              className="mt-4 bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
-              onClick={() => setLast5GamesModal(null)}
-            >
-              Close
-            </button>
-          </motion.div>
-        </motion.div>
-      )}
+      {/* Render the Last 5 Games Modal */}
+      {renderLast5GamesModal()}
 
       {/* Game Stats Modal */}
       {gameStatsModal && (

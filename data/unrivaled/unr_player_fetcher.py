@@ -5,6 +5,7 @@ from requests.exceptions import RequestException
 import firebase_admin
 from firebase_admin import credentials, firestore
 import os
+from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 # Suppress insecure request warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -18,7 +19,7 @@ PROXIES = {"https": PROXY}
 FIRESTORE_COLLECTION = "prop_lines"  # Firestore collection name
 
 # Initialize Firestore using your existing method
-cred = credentials.Certificate("secrets/firebase_key.json")
+cred = credentials.Certificate("../../secrets/firebase_key.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client(database_id="unrivaled-db")
 
@@ -30,14 +31,21 @@ def clear_firestore_collection(collection_name):
         doc.reference.delete()
     print(f"Collection {collection_name} cleared.")
 
-def upload_to_firestore(collection_name, player_id, data):
-    """Upload data to Firestore under a specific player_id."""
-    doc_ref = db.collection(collection_name).document(player_id)
+def upload_to_firestore(collection_name, player_id, stat_type, data):
+    """Upload data to Firestore under a specific player_id and stat_type."""
+    # Use a composite key for the document ID: player_id + "_" + stat_type
+    doc_id = f"{player_id}_{stat_type}"
+    doc_ref = db.collection(collection_name).document(doc_id)
     doc_ref.set(data)
-    print(f"Uploaded data for Player {player_id} to Firestore.")
+    print(f"Uploaded data for Player {player_id} (Stat: {stat_type}) to Firestore.")
 
+@retry(
+    stop=stop_after_attempt(5),  # Retry up to 5 times
+    wait=wait_exponential(multiplier=1, min=2, max=10),  # Exponential backoff
+    retry=retry_if_exception_type(RequestException),  # Retry on RequestException
+)
 def fetch_player_data(player_id):
-    """Fetch player data from the API."""
+    """Fetch player data from the API with retry functionality."""
     url = f"https://api.prizepicks.com/players/{player_id}"
     try:
         response = requests.get(url, proxies=PROXIES, verify=False)
@@ -46,24 +54,28 @@ def fetch_player_data(player_id):
         return response.json()
     except RequestException as e:
         print(f"Failed to fetch data for player {player_id}: {e}")
-        return None
+        raise  # Re-raise the exception to trigger retry
 
 def main():
     # Clear the prop_lines collection before uploading new data
     clear_firestore_collection(FIRESTORE_COLLECTION)
 
     # Load player IDs
-    with open("data/unrivaled/player_ids.json", "r") as f:
+    with open("../../data/unrivaled/player_ids.json", "r") as f:
         player_ids = json.loads(f.read())
 
     # Load projections
-    with open("data/unrivaled/unr_bets.json", "r") as f:
+    with open("../../data/unrivaled/unr_bets.json", "r") as f:
         projections = json.load(f)
 
     # Fetch player data and merge with projections
     for projection in projections["data"]:
-        if projection["attributes"].get("stat_display_name") == "Points":
-            player_id = projection["relationships"]["new_player"]["data"]["id"]
+        # Extract player ID and stat type
+        player_id = projection["relationships"]["new_player"]["data"]["id"]
+        stat_type = projection["attributes"]["stat_display_name"]
+
+        # Fetch player data with retry functionality
+        try:
             player_data = fetch_player_data(player_id)
             if player_data:
                 # Prepare data for Firestore
@@ -72,10 +84,12 @@ def main():
                     "projection_data": projection["attributes"]
                 }
 
-                # Upload data to Firestore
-                upload_to_firestore(FIRESTORE_COLLECTION, player_id, firestore_data)
+                # Upload data to Firestore with a composite key (player_id + stat_type)
+                upload_to_firestore(FIRESTORE_COLLECTION, player_id, stat_type, firestore_data)
+        except Exception as e:
+            print(f"Failed to process player {player_id} after retries: {e}")
 
-    print("Enriched players data uploaded to Firestore.")
+    print("Enriched players data for all stats uploaded to Firestore.")
 
 if __name__ == "__main__":
     main()
