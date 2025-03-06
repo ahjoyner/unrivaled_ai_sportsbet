@@ -322,8 +322,8 @@ export default function Home() {
       <header className="fixed top-0 left-0 w-full bg-gradient-to-r from-blue-600 to-purple-600 py-4 shadow-lg z-50">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <h1 className="text-xl sm:text-3xl font-bold text-white flex items-center">
-            <img src="/logo.jpg" alt="MODUEL Logo" className="h-8 sm:h-10 mr-2 rounded-full" />
-            MODUEL Prop Confidence
+            <img src="/logo.jpg" alt="MOD-Duel Logo" className="h-8 sm:h-10 mr-2 rounded-full" />
+            MOD-Duel Prop Confidence
           </h1>
           <input
             type="text"
@@ -743,7 +743,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-gray-800 text-white py-6 mt-8">
         <div className="container mx-auto px-4 text-center">
-          <p className="text-gray-400">&copy; 2023 MODUEL. All rights reserved.</p>
+          <p className="text-gray-400">&copy; 2023 MOD-Duel. All rights reserved.</p>
         </div>
       </footer>
     </div>
