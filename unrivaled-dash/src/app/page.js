@@ -58,6 +58,7 @@ export default function Home() {
   const [last5GamesModal, setLast5GamesModal] = useState(null);
   const [gameStatsModal, setGameStatsModal] = useState(null);
   const [reasonIndex, setReasonIndex] = useState(1);
+  const [selectedStat, setSelectedStat] = useState("Points"); // Default to Points
 
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
 
@@ -70,6 +71,9 @@ export default function Home() {
     Legend,
     annotationPlugin
   );
+
+  // Define the available stat types
+  const statTabs = ["Points", "Rebounds", "Assists", "Pts+Rebs+Asts"];
 
   // Fetch players and their prop lines from Firestore
   useEffect(() => {
@@ -299,6 +303,28 @@ export default function Home() {
     setReasonIndex((prev) => (prev > 1 ? prev - 1 : 5));
   };
 
+  // Render the tabs
+  const renderTabs = () => (
+    <div className="flex justify-center gap-2 mb-6">
+      {statTabs.map((stat) => (
+        <button
+          key={stat}
+          className={`px-4 py-2 rounded-lg transition-colors ${
+            selectedStat === stat
+              ? "bg-orange-500 text-white"
+              : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+          }`}
+          onClick={() => setSelectedStat(stat)}
+        >
+          {stat}
+        </button>
+      ))}
+    </div>
+  );
+
+  // Filter players by selected stat
+  const playersForSelectedStat = filteredPlayers.filter((player) => player.stat_type === selectedStat);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-900">
@@ -337,77 +363,87 @@ export default function Home() {
 
       {/* Main Content */}
       <motion.div
-        className="container mx-auto p-4 sm:p-8 pt-24 sm:pt-32 relative z-10" // Increased top padding for mobile
+        className="container mx-auto p-4 sm:p-8 pt-24 sm:pt-32 relative z-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
+        {/* Render the tabs */}
+        {renderTabs()}
+
+        {/* Render the players filtered by selected stat */}
         <div className={`grid ${isMobile ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-4 sm:gap-6`}>
-          {filteredPlayers.map((player, index) => {
-            const confidence = player.confidence_level || 0;
-            const confidenceColor = confidence >= 51 ? "bg-gradient-to-r from-green-400 to-blue-500" : "bg-gradient-to-r from-red-400 to-pink-500";
-            return (
-              <motion.div
-                key={index}
-                className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 sm:p-6 text-center shadow-xl relative hover:shadow-2xl transition-shadow"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ scale: 1.05 }}
-              >
-                <button
-                  className="absolute top-2 right-2 bg-gray-700 text-white px-2 py-1 rounded-lg hover:bg-gray-600 transition-colors"
-                  onClick={() => openLast5GamesModal(player)}
+          {playersForSelectedStat.length > 0 ? (
+            playersForSelectedStat.map((player, index) => {
+              const confidence = player.confidence_level || 0;
+              const confidenceColor = confidence >= 51 ? "bg-gradient-to-r from-green-400 to-blue-500" : "bg-gradient-to-r from-red-400 to-pink-500";
+              return (
+                <motion.div
+                  key={index}
+                  className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 sm:p-6 text-center shadow-xl relative hover:shadow-2xl transition-shadow"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ scale: 1.05 }}
                 >
-                  L5
-                </button>
-                <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-700 rounded-full mx-auto mb-4 overflow-hidden">
-                  {player.headshot_url ? (
-                    <img
-                      src={player.headshot_url}
-                      alt={player.displayName}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gray-700"></div>
-                  )}
-                </div>
-                <p className="text-gray-400 text-sm">
-                  {player.team} - {player.position}
-                </p>
-                <p className={`text-white ${isMobile ? "text-base" : "text-lg sm:text-xl"} font-semibold mt-2`}>{player.displayName}</p>
-                <p className={`text-white ${isMobile ? "text-lg" : "text-xl sm:text-2xl"} font-bold mt-4`}>
-                  {player.prop_line} <span className="text-sm text-gray-400">points</span>
-                </p>
-                <div className="mt-6">
-                  <div className="w-full bg-gray-700 rounded-full h-2.5">
-                    <div
-                      className={`h-2.5 rounded-full confidence-bar ${confidenceColor} ${confidence >= 70 ? "pulse" : ""}`}
-                      style={{
-                        width: `${(confidence / 100) * 100}%`,
-                        transition: "width 0.5s ease-in-out",
-                      }}
-                    ></div>
+                  <button
+                    className="absolute top-2 right-2 bg-gray-700 text-white px-2 py-1 rounded-lg hover:bg-gray-600 transition-colors"
+                    onClick={() => openLast5GamesModal(player)}
+                  >
+                    L5
+                  </button>
+                  <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-700 rounded-full mx-auto mb-4 overflow-hidden">
+                    {player.headshot_url ? (
+                      <img
+                        src={player.headshot_url}
+                        alt={player.displayName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-700"></div>
+                    )}
                   </div>
-                  <div className="flex justify-between text-gray-400 text-sm mt-2">
-                    <span>0</span>
-                    <span>100</span>
+                  <p className="text-gray-400 text-sm">
+                    {player.team} - {player.position}
+                  </p>
+                  <p className={`text-white ${isMobile ? "text-base" : "text-lg sm:text-xl"} font-semibold mt-2`}>{player.displayName}</p>
+                  <p className={`text-white ${isMobile ? "text-lg" : "text-xl sm:text-2xl"} font-bold mt-4`}>
+                    {player.prop_line} <span className="text-sm text-gray-400">{player.stat_type.toLowerCase()}</span>
+                  </p>
+                  <div className="mt-6">
+                    <div className="w-full bg-gray-700 rounded-full h-2.5">
+                      <div
+                        className={`h-2.5 rounded-full confidence-bar ${confidenceColor} ${confidence >= 70 ? "pulse" : ""}`}
+                        style={{
+                          width: `${(confidence / 100) * 100}%`,
+                          transition: "width 0.5s ease-in-out",
+                        }}
+                      ></div>
+                    </div>
+                    <div className="flex justify-between text-gray-400 text-sm mt-2">
+                      <span>0</span>
+                      <span>100</span>
+                    </div>
                   </div>
-                </div>
-                <button
-                  className="mt-4 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors w-full"
-                  onClick={() =>
-                    setSelectedPlayer({
-                      ...player,
-                      reason: player.reason, // Pass the reason map directly
-                    })
-                  }
-                >
-                  <b>View Analysis</b>
-                </button>
-              </motion.div>
-            );
-          })}
+                  <button
+                    className="mt-4 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors w-full"
+                    onClick={() =>
+                      setSelectedPlayer({
+                        ...player,
+                        reason: player.reason,
+                      })
+                    }
+                  >
+                    <b>View Analysis</b>
+                  </button>
+                </motion.div>
+              );
+            })
+          ) : (
+            <div className="col-span-full text-center text-gray-400">
+              {selectedStat === "Points" ? "No players found." : "Coming Soon!"}
+            </div>
+          )}
         </div>
       </motion.div>
 
@@ -420,7 +456,7 @@ export default function Home() {
           exit={{ opacity: 0 }}
         >
           <motion.div
-            className="modal p-4 w-11/12 sm:max-w-2xl relative bg-gray-800 rounded-lg overflow-y-auto max-h-[90vh]" // Increased width and added scroll
+            className="modal p-4 w-11/12 sm:max-w-2xl relative bg-gray-800 rounded-lg overflow-y-auto max-h-[90vh]"
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             exit={{ scale: 0.9 }}
@@ -434,52 +470,52 @@ export default function Home() {
             <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
               {selectedPlayer.displayName} ({selectedPlayer.position} - {selectedPlayer.team})
             </h2>
-            <div className="bg-gray-700 p-3 rounded-lg mb-4"> {/* Reduced padding */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2"> {/* Reduced gap */}
+            <div className="bg-gray-700 p-3 rounded-lg mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <div className="flex flex-col items-center">
-                  <span className="text-orange-400 text-sm font-semibold">Confidence</span> {/* Reduced font size */}
-                  <span className="text-white text-xl font-bold"> {/* Reduced font size */}
+                  <span className="text-orange-400 text-sm font-semibold">Confidence</span>
+                  <span className="text-white text-xl font-bold">
                     {selectedPlayer.confidence_level || 0}
                   </span>
                 </div>
                 <div className="flex flex-col items-center">
-                  <span className="text-orange-400 text-sm font-semibold">Line</span> {/* Reduced font size */}
-                  <span className="text-white text-xl font-bold"> {/* Reduced font size */}
-                    {selectedPlayer.prop_line} <span className="text-xs text-gray-400">points</span> {/* Reduced font size */}
+                  <span className="text-orange-400 text-sm font-semibold">Line</span>
+                  <span className="text-white text-xl font-bold">
+                    {selectedPlayer.prop_line} <span className="text-xs text-gray-400">{selectedPlayer.stat_type.toLowerCase()}</span>
                   </span>
                 </div>
                 <div className="flex flex-col items-center">
-                  <span className="text-orange-400 text-sm font-semibold">Stat</span> {/* Reduced font size */}
-                  <span className="text-white text-xl font-bold"> {/* Reduced font size */}
+                  <span className="text-orange-400 text-sm font-semibold">Stat</span>
+                  <span className="text-white text-xl font-bold">
                     {selectedPlayer.stat_type}
                   </span>
                 </div>
               </div>
             </div>
-            <div className="mt-4"> {/* Reduced margin */}
-              <h3 className="text-lg font-semibold text-orange-400 mb-2"> {/* Reduced margin */}
+            <div className="mt-4">
+              <h3 className="text-lg font-semibold text-orange-400 mb-2">
                 🧠 Reason Breakdown
               </h3>
-              <div className="bg-gray-700 p-3 rounded-lg"> {/* Reduced padding */}
-                <div className="flex items-center justify-between mb-2"> {/* Reduced margin */}
-                  <span className="text-gray-300 text-sm"> {/* Reduced font size */}
+              <div className="bg-gray-700 p-3 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-gray-300 text-sm">
                     {reasonIndex === 1 && "📊 Performance Against Opposing Team"}
                     {reasonIndex === 2 && "📈 Scoring Trends"}
                     {reasonIndex === 3 && "🛠️ Opposing Team's Defensive Weaknesses"}
                     {reasonIndex === 4 && "🔍 Recent Performance"}
                   </span>
-                  <span className="text-gray-400 text-xs"> {/* Reduced font size */}
+                  <span className="text-gray-400 text-xs">
                     Section {reasonIndex} of 4
                   </span>
                 </div>
-                <p className="text-white text-sm"> {/* Reduced font size */}
+                <p className="text-white text-sm">
                   {cleanReasonText(selectedPlayer.reason[String(reasonIndex)] || "No text available.")}
                 </p>
               </div>
-              <div className="flex justify-between mt-2"> {/* Reduced margin */}
+              <div className="flex justify-between mt-2">
                 {reasonIndex > 1 && (
                   <button
-                    className="px-3 py-1 bg-gray-700 text-white rounded-lg hover:bg-gray-600 flex items-center text-sm" 
+                    className="px-3 py-1 bg-gray-700 text-white rounded-lg hover:bg-gray-600 flex items-center text-sm"
                     onClick={handlePrevReason}
                   >
                     <span className="mr-1">&larr;</span> Previous
@@ -495,12 +531,12 @@ export default function Home() {
                 )}
               </div>
               {/* Display Final Conclusion */}
-              <div className="mt-4"> {/* Reduced margin */}
-                <h3 className="text-lg font-semibold text-orange-400 mb-2"> {/* Reduced margin */}
+              <div className="mt-4">
+                <h3 className="text-lg font-semibold text-orange-400 mb-2">
                   🏆 Final Conclusion
                 </h3>
-                <div className="bg-gray-700 p-3 rounded-lg"> {/* Reduced padding */}
-                  <p className="text-white text-sm"> {/* Reduced font size */}
+                <div className="bg-gray-700 p-3 rounded-lg">
+                  <p className="text-white text-sm">
                     {cleanReasonText(selectedPlayer.reason["final_conclusion"] || "No final conclusion available.")}
                   </p>
                 </div>
