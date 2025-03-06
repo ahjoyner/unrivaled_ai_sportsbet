@@ -3,13 +3,14 @@ import aiohttp
 import json
 import sys
 from database.firebase import db
+from datetime import datetime  # Import datetime for timestamp functionality
 from analysis.game_flow import analyze_game_flow
 from analysis.past_performance import analyze_past_performance
 from analysis.final_evaluation import calculate_final_confidence_level
 from helpers.injury_reports import fetch_injury_reports
 from database.player_data import get_game_ids_for_player
 
-semaphore = asyncio.Semaphore(1)
+semaphore = asyncio.Semaphore(4)
 
 async def analyze_player(player):
     async with semaphore:
@@ -17,7 +18,27 @@ async def analyze_player(player):
         player_team = player["player_data"]["team"]
         opposing_team = player["projection_data"]["description"]
         player_prop = player["projection_data"]["line_score"]
+        
+        # Fetch player data from Firebase
+        player_ref = db.collection("players").document(player_name)
 
+        # Check if there's already an analysis for this player
+        analysis_results_ref = player_ref.collection("analysis_results").document("latest")
+        latest_analysis = analysis_results_ref.get().to_dict()
+
+        if latest_analysis:
+            # Get the timestamp of the latest analysis
+            analysis_timestamp = latest_analysis.get("timestamp", None)
+            if analysis_timestamp:
+                # Convert the timestamp to a datetime object
+                analysis_date = datetime.fromisoformat(analysis_timestamp)
+                # Get the current date
+                current_date = datetime.now()
+                # Check if the analysis is from the same day
+                if analysis_date.date() == current_date.date():
+                    print(f"Skipping {player_name} - Analysis already exists for today.", file=sys.stderr)
+                    return None  # Skip this player
+                
         if not player_team:
             print(f"No team found for player: {player_name}", file=sys.stderr)
             return None

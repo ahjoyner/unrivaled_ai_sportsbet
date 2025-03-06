@@ -1,28 +1,48 @@
+import re
 import aiohttp
 import sys
 import json
 from database.firebase import DEEPSEEK_API_KEY, DEEPSEEK_MODEL, DEEPSEEK_API_URL, db
 import asyncio
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from datetime import datetime  # Import datetime for timestamp functionality
 
 @retry(
-    stop=stop_after_attempt(5),  # Retry up to 3 times
+    stop=stop_after_attempt(5),  # Retry up to 5 times
     wait=wait_exponential(multiplier=1, min=4, max=10),  # Exponential backoff
     retry=retry_if_exception_type(Exception),  # Retry on any exception
 )
-
 async def calculate_final_confidence_level(session, player_name, player_team, past_performance_analysis, player_prop, opposing_team, injury_reports):
     # Add a delay to avoid rate limiting
     await asyncio.sleep(1)  # 1-second delay between requests
+
+    # Fetch player data from Firebase
+    player_ref = db.collection("players").document(player_name)
+    player_stats = player_ref.get().to_dict()
+
+    # Check if there's already an analysis for this player
+    analysis_results_ref = player_ref.collection("analysis_results").document("latest")
+    latest_analysis = analysis_results_ref.get().to_dict()
+
+    if latest_analysis:
+        # Get the timestamp of the latest analysis
+        analysis_timestamp = latest_analysis.get("timestamp", None)
+        if analysis_timestamp:
+            # Convert the timestamp to a datetime object
+            analysis_date = datetime.fromisoformat(analysis_timestamp)
+            # Get the current date
+            current_date = datetime.now()
+            # Check if the analysis is from the same day
+            if analysis_date.date() == current_date.date():
+                print(f"Skipping {player_name} - Analysis already exists for today.", file=sys.stderr)
+                return None  # Skip this player
+
+    # If no analysis exists or it's not from today, proceed with the analysis
 
     headers = {
         "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
         "Content-Type": "application/json"
     }
-
-    # Fetch player data from Firebase
-    player_ref = db.collection("players").document(player_name)
-    player_stats = player_ref.get().to_dict()
 
     # Fetch PER and uPER from player stats
     player_per = player_stats.get("per", None)
@@ -70,7 +90,9 @@ async def calculate_final_confidence_level(session, player_name, player_team, pa
     injury_context = ""
     if injury_reports:
         for report in injury_reports:
-            if report["team"].lower() == player_team.lower() or report["team"].lower() == opposing_team.lower():
+            if report["team"].lower() == player_team.lower():
+                injury_context += f"{report['player']} ({report['team']}) is {report['status']} with {report['injury']}. This could lead to increased playtime for {player_name}.\n"
+            elif report["team"].lower() == opposing_team.lower():
                 injury_context += f"{report['player']} ({report['team']}) is {report['status']} with {report['injury']}.\n"
 
     # Prepare the analysis prompt with all stats
@@ -141,7 +163,10 @@ async def calculate_final_confidence_level(session, player_name, player_team, pa
                     while i < len(lines):
                         line = lines[i].strip()
                         if line.startswith("Confidence Level:"):
-                            confidence_level = int(line.split(":")[1].strip().split(" ")[0])
+                            # Clean the confidence level string by removing non-numeric characters
+                            confidence_str = line.split(":")[1].strip()
+                            confidence_str_cleaned = re.sub(r"[^0-9]", "", confidence_str)  # Remove non-numeric characters
+                            confidence_level = int(confidence_str_cleaned)  # Convert to integer
                             i += 1
                         elif line.startswith("Reason"):
                             reason_text = []
@@ -170,7 +195,8 @@ async def calculate_final_confidence_level(session, player_name, player_team, pa
                             "reason_2": reasons[1],
                             "reason_3": reasons[2],
                             "reason_4": reasons[3],
-                            "final_conclusion": final_conclusion
+                            "final_conclusion": final_conclusion,
+                            "timestamp": datetime.now().isoformat()  # Add a timestamp
                         })
 
                         return {
