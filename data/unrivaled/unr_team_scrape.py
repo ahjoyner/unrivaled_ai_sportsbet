@@ -100,8 +100,8 @@ def scrape_and_store_team_stats():
     print("🔄 Starting team stats scrape...")
     team_stats_df = scrape_team_stats()
 
-    print("💾 Saving to CSV...")
-    team_stats_df.to_csv("data/unrivaled/csv/unrivaled_team_stats.csv", index=False)
+    # print("💾 Saving to CSV...")
+    # team_stats_df.to_csv("data/unrivaled/csv/unrivaled_team_stats.csv", index=False)
 
     print("🚀 Updating Firestore database...")
     insert_team_stats_into_firestore(team_stats_df)

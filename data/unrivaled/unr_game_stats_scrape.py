@@ -11,13 +11,14 @@ import aiohttp
 from fuzzywuzzy import fuzz
 
 # Initialize Firebase
-cred = credentials.Certificate("secrets/firebase_key.json")
+cred = credentials.Certificate("../../secrets/firebase_key.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client(database_id="unrivaled-db")
 
 # Base URL for Unrivaled schedule
 BASE_URL = "https://www.unrivaled.basketball"
 SCHEDULE_URL = f"{BASE_URL}/schedule"
+GAME_URL = f"{BASE_URL}/game/"
 
 def convert_to_firestore_date(date_str):
     """Convert date to Firestore format (YYYY-MM-DD)."""
@@ -73,18 +74,165 @@ def format_player_name(player_href):
     # Otherwise, return the formatted name
     return formatted_name
 
+async def scrape_team_stats(game_id, game_date):
+    game = GAME_URL + game_id
+    print(game)
+    response = requests.get(game)
+    soup = BeautifulSoup(response.content, "html.parser")
+    """Scrape team-level stats from the game page."""
+    team_stats = []
+
+    # Find the team names from the table headers
+    thead = soup.find("thead")
+    if thead:
+        th_elements = thead.find_all("th")
+        if len(th_elements) >= 3:
+            teams_ref = db.collection("teams").stream()
+            team_names = {doc.id.lower(): doc.id for doc in teams_ref}  # Map lowercase names to original names
+
+            home_team_img = th_elements[1].find("img")
+            away_team_img = th_elements[2].find("img")
+
+            home_team_src = home_team_img["src"] if home_team_img else None
+            away_team_src = away_team_img["src"] if away_team_img else None
+
+            # Extract team name from src (e.g., "2Fteams%2Fphantom%2Fimages%2F" -> "phantom")
+            def extract_team_name(src):
+                if not src:
+                    return None
+                try:
+                    # Find the part of the string between "2Fteams%2F" and "%2Fimages%2F"
+                    start = src.index("2Fteams%2F") + len("2Fteams%2F")
+                    end = src.index("%2Fimages%2F", start)
+                    return src[start:end]
+                except ValueError:
+                    return None
+
+            scraped_home_team_name = extract_team_name(home_team_src)
+            scraped_away_team_name = extract_team_name(away_team_src)
+
+            # Match home team name with Firebase team names
+            home_team_name = None
+            for team_name in team_names:
+                # print(team_name)
+                if team_name in scraped_home_team_name:
+                    home_team_name = team_names[team_name]  # Use the Firebase team name
+
+            # If no match is found, use the scraped team name
+            if not home_team_name:
+                home_team_name = scraped_home_team_name
+
+            away_team_name = None
+            for team_name in team_names:
+                # print(team_name)
+                if team_name in scraped_away_team_name:
+                    away_team_name = team_names[team_name]  # Use the Firebase team name
+
+            # If no match is found, use the scraped team name
+            if not away_team_name:
+                away_team_name = scraped_away_team_name
+
+            # Fetch all team names from Firebase to match with the scraped names
+            # print(team_names)
+
+            # Match home and away team names with Firebase names
+            home_team = team_names.get(home_team_name.lower().replace("-", " "), home_team_name.replace("-", " "))
+            away_team = team_names.get(away_team_name.lower().replace("-", " "), away_team_name.replace("-", " "))
+
+            # Scrape team stats from the table body
+            tbody = soup.find("tbody")
+            if tbody:
+                rows = tbody.find_all("tr")
+                for row in rows:
+                    cols = row.find_all("td")
+                    if len(cols) >= 3:
+                        stat_name = cols[0].text.strip().lower().replace(" ", "_")  # Ensure stat_name is lowercase and uses underscores
+                        home_stat = cols[1].text.strip()
+                        away_stat = cols[2].text.strip()
+
+                        # Skip if stat_name is empty or invalid
+                        if not stat_name:
+                            print(f"⚠ Empty stat_name for game {game_id}. Skipping...")
+                            continue
+
+                        # Parse FG, 3PT, and FT stats into made and attempted
+                        if stat_name in ["fg", "3pt", "ft"]:
+                            try:
+                                home_made, home_attempted = home_stat.split("-")
+                                away_made, away_attempted = away_stat.split("-")
+                            except ValueError:
+                                print(f"⚠ Invalid FG/3PT/FT format for game {game_id}. Skipping...")
+                                continue
+
+                            team_stats.append({
+                                "game_id": game_id,
+                                "game_date": game_date,
+                                "team": home_team,
+                                "stat": f"{stat_name}_m",
+                                "value": int(home_made)
+                            })
+                            team_stats.append({
+                                "game_id": game_id,
+                                "game_date": game_date,
+                                "team": home_team,
+                                "stat": f"{stat_name}_a",
+                                "value": int(home_attempted)
+                            })
+                            team_stats.append({
+                                "game_id": game_id,
+                                "game_date": game_date,
+                                "team": away_team,
+                                "stat": f"{stat_name}_m",
+                                "value": int(away_made)
+                            })
+                            team_stats.append({
+                                "game_id": game_id,
+                                "game_date": game_date,
+                                "team": away_team,
+                                "stat": f"{stat_name}_a",
+                                "value": int(away_attempted)
+                            })
+                        else:
+                            # For other stats, check if they are numeric before converting
+                            def parse_stat(stat):
+                                try:
+                                    return float(stat) if "." in stat else int(stat)
+                                except ValueError:
+                                    return stat  # Return the stat as-is if it's not numeric
+
+                            team_stats.append({
+                                "game_id": game_id,
+                                "game_date": game_date,
+                                "team": home_team,
+                                "stat": stat_name,
+                                "value": parse_stat(home_stat)
+                            })
+                            team_stats.append({
+                                "game_id": game_id,
+                                "game_date": game_date,
+                                "team": away_team,
+                                "stat": stat_name,
+                                "value": parse_stat(away_stat)
+                            })
+
+    return team_stats
+
 async def scrape_game_stats(session, game_url, game_id, game_date):
     """Scrape game statistics asynchronously and return DataFrame and metadata."""
     async with session.get(game_url) as response:
         content = await response.text()
         soup = BeautifulSoup(content, "html.parser")
 
+        # Scrape team stats
+        team_stats = await scrape_team_stats(game_id, game_date)
+
+        # Scrape player stats (existing code)
         teams_div = soup.find_all("div", class_="scrollbar-none")
         team_names = [div.find("h4").text.strip() for div in teams_div if div.find("h4")]
 
         if len(team_names) != 2:
             print(f"Error extracting team names from {game_url}")
-            return None, None
+            return None, None, None
 
         home_team, away_team = team_names[0], team_names[1]
         home_team_pts, away_team_pts = 0, 0
@@ -133,7 +281,28 @@ async def scrape_game_stats(session, game_url, game_id, game_date):
             "ast", "stl", "blk", "turnovers", "pf", "pts"
         ]
 
-        return pd.DataFrame(players_stats, columns=columns), game_metadata
+        return pd.DataFrame(players_stats, columns=columns), game_metadata, team_stats
+
+def insert_team_stats_into_firestore(team_stats):
+    """Insert team stats into Firestore under teams/{team_name}/games/{game_id}."""
+    for stat in team_stats:
+        print(stat)
+        team_name = stat["team"]
+        game_id = stat["game_id"]
+        stat_name = stat["stat"]
+        stat_value = stat["value"]
+
+        # Ensure stat_name is a valid string and not empty
+        if not isinstance(stat_name, str) or not stat_name.strip():
+            print(f"⚠ Invalid stat_name for team {team_name} in game {game_id}. Skipping...")
+            continue
+
+        # Insert the stat into Firestore
+        db.collection("teams").document(team_name).collection("games").document(game_id).set({
+            stat_name: stat_value
+        }, merge=True)
+
+    print(f"✅ Inserted/Updated team stats for {len(team_stats)} records into Firestore.")
 
 def insert_game_metadata_into_firestore(game_metadata):
     """Insert game metadata into Firestore under games/{game_id}."""
@@ -211,11 +380,12 @@ async def scrape_and_store_game(session, game_link, game_id, game_date):
         return  # Skip this game if it already exists
 
     print(f"🔄 Scraping game stats from: {game_link} (Date: {game_date})")
-    game_stats_df, game_metadata = await scrape_game_stats(session, game_link, game_id, game_date)
+    game_stats_df, game_metadata, team_stats = await scrape_game_stats(session, game_link, game_id, game_date)
 
     if game_stats_df is not None and game_metadata is not None:
         insert_game_metadata_into_firestore(game_metadata)
         insert_game_stats_into_firestore(game_stats_df)
+        insert_team_stats_into_firestore(team_stats)
 
     print(f"🎥 Scraping play-by-play for game: {game_id}")
     play_by_play_df = pbp.scrape_play_by_play(game_id, game_date, db)

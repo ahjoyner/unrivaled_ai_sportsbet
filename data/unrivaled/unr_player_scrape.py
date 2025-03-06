@@ -4,12 +4,13 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import firebase_admin
 from firebase_admin import credentials, firestore
+from analysis.calculate_per import calculate_per, compute_league_average_uper
 from difflib import SequenceMatcher
 import unicodedata
 from datetime import datetime
 import os
 
-cred = credentials.Certificate("secrets/firebase_key.json")
+cred = credentials.Certificate("../../secrets/firebase_key.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client(database_id="unrivaled-db")
 
@@ -160,6 +161,10 @@ def insert_into_firestore(player_stats_df):
     players_ref = db.collection("players").stream()
     player_names = {doc.id.lower(): doc.id for doc in players_ref} 
 
+    # Compute the league-wide average UPER
+    league_average_uper = compute_league_average_uper(db)
+    print(f"League Average UPER: {league_average_uper}")
+
     for _, row in player_stats_df.iterrows():
         player_data = row.to_dict()
         player_name = player_data["name"]
@@ -172,6 +177,14 @@ def insert_into_firestore(player_stats_df):
         
         del player_data["name"]
         del player_data["player_url"]
+
+        # Calculate UPER and PER for the player
+        uper = calculate_per(player_name_firestore, db)
+        if uper is not None:
+            per = uper * (15 / league_average_uper)
+            player_data["uper"] = uper
+            player_data["per"] = per
+            print(f"Calculated UPER: {uper}, PER: {per} for {player_name}")
 
         # Save player data with the normalized player name
         db.collection("players").document(player_name_firestore).set(player_data)
@@ -189,5 +202,5 @@ if __name__ == "__main__":
     
     player_stats_df = scrape_player_stats(enriched_data)
     insert_into_firestore(player_stats_df)
-    player_stats_df.to_csv("data/unrivaled/csv/unrivaled_player_stats.csv", index=False)
+    # player_stats_df.to_csv("data/unrivaled/csv/unrivaled_player_stats.csv", index=False)
     print(player_stats_df)
