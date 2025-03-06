@@ -25,13 +25,13 @@ async def analyze_game_flow(session, player_name, game_id, stat_type):
 
     # Field name for storing analysis by stat type
     analysis_field = f"{stat_type.lower()}_analysis"
-    print(analysis_field)
+    #print(analysis_field)
 
     if existing_analysis.exists and analysis_field in existing_analysis.to_dict():
         print(f"Analysis already exists for {player_name} in Game {game_id} for stat type {stat_type}. Skipping.")
         return existing_analysis.to_dict().get(analysis_field)
 
-    print(f"{analysis_field} does not exist yet")
+    #print(f"{analysis_field} does not exist yet")
     # Fetch play-by-play data
     plays = fetch_plays_for_player(game_id, player_name)
     if not plays:
@@ -41,9 +41,9 @@ async def analyze_game_flow(session, player_name, game_id, stat_type):
     # Analyze streaks and performance based on the stat type
     try:
         if stat_type == "Points":
-            print("Looking at Points...")
+            #print("Looking at Points...")
             streaks = analyze_streaks(plays, player_name, stat_type)
-            print(streaks)
+            #print(streaks)
             summary = {
                 "total_points": sum(1 for play in plays if "makes" in play["play_description"]),
                 "total_misses": sum(1 for play in plays if "misses" in play["play_description"]),
@@ -60,7 +60,7 @@ async def analyze_game_flow(session, player_name, game_id, stat_type):
             streaks = {
                 "rebound_streaks": analyze_streaks(plays, player_name, stat_type)
             }
-            print(streaks)
+            #print(streaks)
         elif stat_type == "Assists":
             # Analyze assists
             total_assists = sum(1 for play in plays if "assist" in play["play_description"].lower())
@@ -70,7 +70,7 @@ async def analyze_game_flow(session, player_name, game_id, stat_type):
             streaks = {
                 "assist_streaks": analyze_streaks(plays, player_name, stat_type)
             }
-            print(streaks)
+            #print(streaks)
         elif stat_type == "Pts+Rebs+Asts":
             # Analyze combined stats (Points + Rebounds + Assists)
             total_points = sum(1 for play in plays if "makes" in play["play_description"])
@@ -87,7 +87,7 @@ async def analyze_game_flow(session, player_name, game_id, stat_type):
                 "rebound_streaks": analyze_streaks(plays, player_name, stat_type),
                 "assist_streaks": analyze_streaks(plays, player_name, stat_type),
             }
-            print(streaks)
+            #print(streaks)
         else:
             print(f"Unsupported stat type: {stat_type}", file=sys.stderr)
             return None

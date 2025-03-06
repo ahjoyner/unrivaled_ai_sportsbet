@@ -3,7 +3,7 @@ import aiohttp
 import json
 import sys
 from database.firebase import db
-from datetime import datetime  # Import datetime for timestamp functionality
+from datetime import datetime, timedelta  # Import datetime for timestamp functionality
 from analysis.game_flow import analyze_game_flow
 from analysis.past_performance import analyze_past_performance
 from analysis.final_evaluation import calculate_final_confidence_level
@@ -35,10 +35,12 @@ async def analyze_player(player):
                 analysis_date = datetime.fromisoformat(analysis_timestamp)
                 # Get the current date
                 current_date = datetime.now()
-                # Check if the analysis is from the same day
-                if analysis_date.date() == current_date.date():
-                    print(f"Skipping {player_name} ({stat_type}) - Analysis already exists for today.", file=sys.stderr)
-                    return None  # Skip this player and stat type
+
+                time_difference = current_date - analysis_date
+                # Check if the analysis is from the last 3 hours
+                if time_difference < timedelta(hours=3):
+                    print(f"Skipping {player_name} ({stat_type}) - Analysis already exists within the last 3 hours.", file=sys.stderr)
+                    return None  # Skip this player
                 
         if not player_team:
             print(f"No team found for player: {player_name}", file=sys.stderr)

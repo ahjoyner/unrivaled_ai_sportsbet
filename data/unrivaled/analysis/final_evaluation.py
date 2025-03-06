@@ -5,7 +5,7 @@ import json
 from database.firebase import DEEPSEEK_API_KEY, DEEPSEEK_MODEL, DEEPSEEK_API_URL, db
 import asyncio
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-from datetime import datetime  # Import datetime for timestamp functionality
+from datetime import datetime, timedelta  # Import datetime for timestamp functionality
 
 @retry(
     stop=stop_after_attempt(5),  # Retry up to 5 times
@@ -33,9 +33,12 @@ async def calculate_final_confidence_level(session, player_name, player_team, pa
             final_conclusion = latest_analysis.get("final_conclusion", "")
             # Get the current date
             current_date = datetime.now()
-            # Check if the analysis is from the same day
-            if analysis_date.date() == current_date.date() and final_conclusion != "":
-                print(f"Skipping {player_name} - Analysis already exists for today for stat type {stat_type}.", file=sys.stderr)
+
+            # Calculate the time difference between now and the analysis timestamp
+            time_difference = current_date - analysis_date
+            # Check if the analysis is from the last 3 hours
+            if time_difference < timedelta(hours=3) and final_conclusion != "":
+                print(f"Skipping {player_name} ({stat_type}) - Analysis already exists within the last 3 hours.", file=sys.stderr)
                 return None  # Skip this player
 
     # If no analysis exists or it's not from today, proceed with the analysis
@@ -118,8 +121,10 @@ async def calculate_final_confidence_level(session, player_name, player_team, pa
                     f"Injury Reports:\n{injury_context}\n\n"
                     f"Player Prop: {player_prop} {stat_type.lower()}\n\n"
                     f"Opposing Team: {opposing_team}\n\n"
+                    "Take into account these weights: recent_performance_weight = 0.3, matchup_weight = 0.25, defensive_weight = 0.2, injury_weight = 0.25, when making your decision. "
                     "Provide a definitive confidence level (0-100) and 4 detailed reasons for taking the over or under on the player's prop line, as well as a final summary. "
                     "The confidence level should reflect a strong belief in the outcome, with 0-25 indicating an extreme under, 26-50 indicating a moderate under, 51-75 indicating a moderate over, and 76-100 indicating an extreme over. "
+                    "Avoid clustering around 65 unless the data is truly inconclusive. If the data strongly suggests an over or under, provide a more definitive confidence level (e.g., 80 for a strong over or 30 for a strong under). "
                     "Please format your response as follows:\n"
                     "Confidence Level: <confidence_level>\n"
                     "Reason 1 (Performance Against Opposing Team): <reason_1>\n"
