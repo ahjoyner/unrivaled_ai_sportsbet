@@ -5,6 +5,7 @@ from requests.exceptions import RequestException
 import firebase_admin
 from firebase_admin import credentials, firestore
 import os
+import time
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
 
 # Suppress insecure request warnings
@@ -49,11 +50,14 @@ def fetch_player_data(player_id):
     url = f"https://api.prizepicks.com/players/{player_id}"
     try:
         response = requests.get(url, proxies=PROXIES, verify=False)
-        response.raise_for_status()
+        response.raise_for_status()  # Raise an exception for HTTP errors
         print(f"Success for Player {player_id}!")
         return response.json()
     except RequestException as e:
         print(f"Failed to fetch data for player {player_id}: {e}")
+        if response.status_code == 401 or response.status_code == 499 or response.status_code == 400:
+            print(f"{response.status_code} Unauthorized error detected. Retrying after a short delay...")
+            time.sleep(3)  # Add a delay before retrying for 401 errors
         raise  # Re-raise the exception to trigger retry
 
 def main():
