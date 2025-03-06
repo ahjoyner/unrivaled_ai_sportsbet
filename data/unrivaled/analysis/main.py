@@ -54,7 +54,7 @@ async def analyze_player(player):
                 # Process game flow analyses sequentially
                 game_flow_analyses = []
                 for game_id in game_ids:
-                    game_flow_analysis = await analyze_game_flow(session, player_name, game_id)
+                    game_flow_analysis = await analyze_game_flow(session, player_name, game_id, stat_type)
                     game_flow_analyses.append(game_flow_analysis)
 
                 # Analyze past performance

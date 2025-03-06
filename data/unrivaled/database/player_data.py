@@ -65,29 +65,50 @@ def fetch_plays_for_player(game_id, player_name):
         print(f"Error fetching plays for player {player_name} in game {game_id}: {e}", file=sys.stderr)
         return []
 
-def analyze_streaks(plays, player_name):
+def analyze_streaks(plays, player_name, stat_type):
+    print(f"Looking at possible {stat_type} streaks for {player_name}")
     """
     Analyze streaks in parallel for large datasets.
     """
     streaks = {
         "hot_streaks": 0,
         "cold_streaks": 0,
-        "assist_streaks": 0
+        "assist_streaks": 0,
+        "rebound_streaks": 0,
     }
 
     def process_play(play, previous_play):
         description = play.get("play_description", "").lower()
-        result = {"hot": 0, "cold": 0, "assist": 0}
+        result = {"hot": 0, "cold": 0, "assist": 0, "rebound": 0}
 
-        if "makes" in description:
-            if previous_play and "makes" in previous_play.get("play_description", "").lower():
-                result["hot"] = 1
-        elif "misses" in description:
-            if previous_play and "misses" in previous_play.get("play_description", "").lower():
-                result["cold"] = 1
-        elif "assist" in description:
-            if previous_play and "turnover" not in previous_play.get("play_description", "").lower():
-                result["assist"] = 1
+        if stat_type == "Points":
+            if "makes" in description:
+                if previous_play and "makes" in previous_play.get("play_description", "").lower():
+                    result["hot"] = 1
+            elif "misses" in description:
+                if previous_play and "misses" in previous_play.get("play_description", "").lower():
+                    result["cold"] = 1
+        elif stat_type == "Assists":
+            if "assist" in description:
+                if previous_play and "turnover" not in previous_play.get("play_description", "").lower():
+                    result["assist"] = 1
+        elif stat_type == "Rebounds":
+            if "offensive rebound" in description or "defensive rebound" in description:
+                if previous_play and ("offensive rebound" in previous_play.get("play_description", "").lower() or
+                                   "defensive rebound" in previous_play.get("play_description", "").lower()):
+                    result["rebound"] = 1
+        elif stat_type == "Pts+Rebs+Asts":
+            if "makes" in description or "misses" in description:
+                if previous_play and ("makes" in previous_play.get("play_description", "").lower() or
+                                   "misses" in previous_play.get("play_description", "").lower()):
+                    result["hot"] = 1
+            elif "assist" in description:
+                if previous_play and "turnover" not in previous_play.get("play_description", "").lower():
+                    result["assist"] = 1
+            elif "offensive rebound" in description or "defensive rebound" in description:
+                if previous_play and ("offensive rebound" in previous_play.get("play_description", "").lower() or
+                                   "defensive rebound" in previous_play.get("play_description", "").lower()):
+                    result["rebound"] = 1
 
         return result
 
@@ -103,9 +124,9 @@ def analyze_streaks(plays, player_name):
             streaks["hot_streaks"] += result["hot"]
             streaks["cold_streaks"] += result["cold"]
             streaks["assist_streaks"] += result["assist"]
+            streaks["rebound_streaks"] += result["rebound"]
 
-    print(f"Streaks found for {player_name}")
-
+    print(f"Streaks found for {player_name} in stat type: {stat_type}")
     return streaks
 
 def get_game_stats(game_id, player_name):

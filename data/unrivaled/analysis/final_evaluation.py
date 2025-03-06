@@ -145,7 +145,7 @@ async def calculate_final_confidence_level(session, player_name, player_team, pa
     }
 
     try:
-        timeout = aiohttp.ClientTimeout(total=120)  # 120-second timeout
+        timeout = aiohttp.ClientTimeout(total=180)  # 120-second timeout
         async with session.post(DEEPSEEK_API_URL, headers=headers, json=data, timeout=timeout) as response:
             if response.status == 200:
                 result = await response.json()
