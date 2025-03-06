@@ -1,5 +1,6 @@
 import aiohttp
 import sys
+import json
 from database.firebase import DEEPSEEK_API_KEY, DEEPSEEK_MODEL, DEEPSEEK_API_URL, db
 import asyncio
 from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
@@ -19,46 +20,60 @@ async def calculate_final_confidence_level(session, player_name, player_team, pa
         "Content-Type": "application/json"
     }
 
-    # Fetch past game analyses from Firebase
+    # Fetch player data from Firebase
     player_ref = db.collection("players").document(player_name)
-    games_ref = player_ref.collection("games")
-    past_game_analyses = []
+    player_stats = player_ref.get().to_dict()
 
-    # Fetch all teams' "pa" values
-    teams_ref = db.collection("teams").stream()
-    teams_pa = {team.id: team.to_dict().get("pa", 0) for team in teams_ref}  # Store in a dictionary
+    # Fetch PER and uPER from player stats
+    player_per = player_stats.get("per", None)
+    player_uper = player_stats.get("uper", None)
 
-    # Sort teams by "pa" in descending order (higher is worse)
-    sorted_teams = sorted(teams_pa.items(), key=lambda x: x[1], reverse=True)
+    # Fetch team data for points scored and points allowed
+    team_ref = db.collection("teams").document(player_team)
+    team_stats = team_ref.get().to_dict()
+    points_scored = team_stats.get("pts_y", None)  # Points scored by the team
+    points_allowed = team_stats.get("pts_a", None)  # Points allowed by the team
 
-    # Create a ranking dictionary
-    team_rankings = {team: rank + 1 for rank, (team, _) in enumerate(sorted_teams)}
+    # Fetch team records and win streaks
+    losses = team_stats.get("losses", "")
+    wins = team_stats.get("wins", "")
+    team_record = f"{wins}-{losses}"
+    streak = team_stats.get("streak", 0)
 
-    # Function to get ranking for a specific opposing team
-    def get_team_ranking(opposing_team):
-        return team_rankings.get(opposing_team, "Team not found")
+    # Fetch matchup history (player performance against opposing team)
+    matchup_history = []
+    games_ref = player_ref.collection("games").stream()
+    for game in games_ref:
+        game_stats = game.to_dict()
+        if game_stats.get("opposing_team", "").lower() == opposing_team.lower():
+            matchup_history.append({
+                "points": game_stats.get("pts", 0),
+                "rebounds": game_stats.get("reb", 0),
+                "assists": game_stats.get("ast", 0),
+                "date": game_stats.get("game_date", "Unknown")
+            })
 
-    rank = get_team_ranking(opposing_team)
-    pa = teams_pa[opposing_team]
+    # Fetch recent player performance (last 5 games)
+    recent_games = []
+    games_ref = player_ref.collection("games").stream()
+    for game in games_ref:
+        game_stats = game.to_dict()
+        recent_games.append({
+            "points": game_stats.get("pts", 0),
+            "rebounds": game_stats.get("reb", 0),
+            "assists": game_stats.get("ast", 0),
+            "date": game_stats.get("game_date", "Unknown")
+        })
+    recent_games = sorted(recent_games, key=lambda x: x["date"], reverse=True)[:5]  # Last 5 games
 
-    try:
-        # Use a regular for loop since stream() is synchronous
-        for game in games_ref.stream():
-            if "analysis" in game.to_dict():
-                past_game_analyses.append(game.to_dict()["analysis"])
-    except Exception as e:
-        print(f"Error fetching past game analyses for {player_name}: {e}", file=sys.stderr)
-        return None
-
-    # Combine past game analyses into a single string
-    past_game_analyses_str = "\n\n".join(past_game_analyses)
-
+    # Fetch injury reports (already passed as an argument)
     injury_context = ""
     if injury_reports:
         for report in injury_reports:
             if report["team"].lower() == player_team.lower() or report["team"].lower() == opposing_team.lower():
                 injury_context += f"{report['player']} ({report['team']}) is {report['status']} with {report['injury']}.\n"
 
+    # Prepare the analysis prompt with all stats
     data = {
         "model": DEEPSEEK_MODEL,
         "messages": [
@@ -66,12 +81,20 @@ async def calculate_final_confidence_level(session, player_name, player_team, pa
                 "role": "user",
                 "content": (
                     f"Analyze the following data for {player_name}:\n\n"
-                    f"Past Game Analyses:\n{past_game_analyses_str}\n\n"
-                    f"Past Performance Analysis against {opposing_team}:\n{past_performance_analysis}\n\n"
+                    f"Player Efficiency Rating (PER): {player_per} (League Average: 15)\n"
+                    f"Unadjusted PER (UPER): {player_uper} (League Average: 0.851)\n"
+                    f"Team Points Scored (Offensive Proxy): {points_scored}\n"
+                    f"Team Points Allowed (Defensive Proxy): {points_allowed}\n"
+                    f"Team Record: {team_record}\n"
+                    f"Team Win/Lose Streak: {streak} games\n\n"
+                    f"Past Performance Analysis: {past_performance_analysis}\n\n"
+                    f"Matchup History Against {opposing_team}:\n"
+                    f"{json.dumps(matchup_history, indent=2)}\n\n"
+                    f"Recent Performance (Last 5 Games):\n"
+                    f"{json.dumps(recent_games, indent=2)}\n\n"
+                    f"Injury Reports:\n{injury_context}\n\n"
                     f"Player Prop: {player_prop} points\n\n"
                     f"Opposing Team: {opposing_team}\n\n"
-                    f"Opposing Team Points Allowed: {pa} points, ranked {rank} out of 6 teams (6 being most pts allowed)\n\n"
-                    f"Injury Reports:\n{injury_context}\n\n"
                     "Provide a definitive confidence level (0-100) and 4 detailed reasons for taking the over or under on the player's prop line, as well as a final summary. "
                     "The confidence level should reflect a strong belief in the outcome, with 0-25 indicating an extreme under, 26-50 indicating a moderate under, 51-75 indicating a moderate over, and 76-100 indicating an extreme over. "
                     "Please format your response as follows:\n"
@@ -112,51 +135,32 @@ async def calculate_final_confidence_level(session, player_name, player_team, pa
 
                     # Split the response into lines
                     lines = response_content.split("\n")
-                    # print(lines)
 
                     # Iterate through the lines to extract data
                     i = 0
                     while i < len(lines):
                         line = lines[i].strip()
-                        # print(line)
-                        # print(line)
                         if line.startswith("Confidence Level:"):
-                            # Extract confidence level
-                            confidence_level = int(line.split(":")[1].strip().split(" ")[0])  # Extract the number (e.g., "70" from "70 (Over)")
+                            confidence_level = int(line.split(":")[1].strip().split(" ")[0])
                             i += 1
                         elif line.startswith("Reason"):
-                            # Capture the entire reason text, including multiline content
                             reason_text = []
-                            print(line)
-                            # Split at "):" and take the part after it
-                            reason_part = line.split("):", 1)  # Split at the first occurrence of "):"
-                            if len(reason_part) > 1:  # Ensure there is text after "):"
-                                reason_text.append(reason_part[1].strip())  # Append the text after "):"
+                            reason_part = line.split("):", 1)
+                            if len(reason_part) > 1:
+                                reason_text.append(reason_part[1].strip())
                             i += 1
-
-                            print(reason_text)
                             reasons.append(" ".join(reason_text).strip())
-                            
                         elif line.startswith("Final Conclusion:"):
-                            # Capture the entire Final Conclusion section, including multiline text
                             conclusion = []
-                            print(line)
-                            # Split at "):" and take the part after it
-                            final = line.split(":", 1)  # Split at the first occurrence of "):"
-                            if len(final) > 1:  # Ensure there is text after "):"
-                                conclusion.append(final[1].strip())  # Append the text after "):"
+                            final = line.split(":", 1)
+                            if len(final) > 1:
+                                conclusion.append(final[1].strip())
+                            i += 1
+                            final_conclusion = "\n".join(conclusion).strip()
+                            break
+                        else:
                             i += 1
 
-                            print(conclusion)
-                            final_conclusion = "\n".join(conclusion).strip()
-                            
-                            break  # Stop parsing after Final Conclusion
-                        else:
-                            i += 1  # Move to the next line
-
-                    print(confidence_level)
-                    print(reasons)
-                    print(final_conclusion)
                     if confidence_level is not None and len(reasons) == 4 and final_conclusion is not None:
                         # Save the results to Firebase under the "latest" document
                         analysis_results_ref = player_ref.collection("analysis_results").document("latest")
