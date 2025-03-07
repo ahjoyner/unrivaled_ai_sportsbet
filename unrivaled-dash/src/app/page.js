@@ -381,6 +381,61 @@ export default function Home() {
     ? Object.values(highestConfidencePlayers) 
     : filteredPlayers.filter((player) => player.stat_type === selectedStat);
 
+  // Fetch last 5 games from Firestore
+  const openLast5GamesModal = async (player) => {
+    try {
+      const playerNameFirestore = player.displayName.replace(/ /g, "_");
+
+      // Fetch the most recent 5 games for the player from players/{player_name}/games
+      const gamesCollection = collection(db, `players/${playerNameFirestore}/games`);
+      const gamesQuery = query(
+        gamesCollection,
+        orderBy("game_date", "desc"), // Sort by game_date in descending order
+        limit(5) // Limit to 5 most recent games
+      );
+
+      const gamesSnapshot = await getDocs(gamesQuery);
+
+      if (gamesSnapshot.empty) {
+        console.log("No games found for player:", playerNameFirestore);
+        return;
+      }
+
+      const gamesData = gamesSnapshot.docs.map((doc) => {
+        const gameData = doc.data();
+        return {
+          game_id: doc.id,
+          ...gameData, // This includes the stats field
+        };
+      });
+
+      // Calculate the stat-specific data for the last 5 games
+      const statData = gamesData.map((game) => {
+        switch (player.stat_type) {
+          case "Points":
+            return game.pts || 0; // Points
+          case "Rebounds":
+            return game.reb || 0; // Rebounds
+          case "Assists":
+            return game.ast || 0; // Assists
+          case "Pts+Rebs+Asts":
+            return (game.pts || 0) + (game.reb || 0) + (game.ast || 0); // Pts+Rebs+Asts
+          default:
+            return 0; // Fallback
+        }
+      });
+
+      console.log("Fetched last 5 games for", playerNameFirestore, gamesData);
+      setLast5GamesModal({
+        ...player,
+        last_5_games: gamesData,
+        stat_data: statData, // Stat-specific data for the chart
+      });
+    } catch (error) {
+      console.error("Error fetching last 5 games:", error);
+    }
+  };
+
   // Render the Last 5 Games Modal
   const renderLast5GamesModal = () => {
     if (!last5GamesModal) return null;
