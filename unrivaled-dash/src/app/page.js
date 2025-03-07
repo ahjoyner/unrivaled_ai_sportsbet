@@ -462,22 +462,24 @@ export default function Home() {
 
   // Render the tabs
   const renderTabs = () => (
-    <div className="fixed top-16 left-0 w-full bg-gray-900 py-2 z-40 shadow-md"> {/* Fixed position above player boxes */}
+    <div className="fixed top-16 left-0 w-full bg-gray-900 py-2 z-40 shadow-md">
       <div className="container mx-auto px-4">
-        <div className="flex gap-2">
-          {statTabs.map((stat) => (
-            <button
-              key={stat}
-              className={`px-3 py-1 rounded-lg transition-colors text-sm ${
-                selectedStat === stat
-                  ? "bg-orange-500 text-white"
-                  : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-              }`}
-              onClick={() => setSelectedStat(stat)}
-            >
-              {stat}
-            </button>
-          ))}
+        <div className="overflow-x-auto">
+          <div className="flex gap-2 whitespace-nowrap">
+            {statTabs.map((stat) => (
+              <button
+                key={stat}
+                className={`px-3 py-1 rounded-lg transition-colors text-sm ${
+                  selectedStat === stat
+                    ? "bg-orange-500 text-white"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                }`}
+                onClick={() => setSelectedStat(stat)}
+              >
+                {stat}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
