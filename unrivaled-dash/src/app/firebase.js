@@ -1,4 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
+import { getAuth } from "firebase/auth"; // Import getAuth
 import { getFirestore } from "firebase/firestore";
 
 // Firebase Config (Using Environment Variables)
@@ -13,6 +14,7 @@ const firebaseConfig = {
 
 // Ensure Firebase isn't initialized multiple times
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const auth = getAuth(app); // Initialize auth
 const db = getFirestore(app, "unrivaled-db"); // Specify the Firestore database
 
-export { db };
+export { auth, db };

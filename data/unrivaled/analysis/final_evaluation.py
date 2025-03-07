@@ -125,6 +125,7 @@ async def calculate_final_confidence_level(session, player_name, player_team, pa
                     "Provide a definitive confidence level (0-100) and 4 detailed reasons for taking the over or under on the player's prop line, as well as a final summary. "
                     "The confidence level should reflect a strong belief in the outcome, with 0-25 indicating an extreme under, 26-50 indicating a moderate under, 51-75 indicating a moderate over, and 76-100 indicating an extreme over. "
                     "Avoid clustering around 65 unless the data is truly inconclusive. If the data strongly suggests an over or under, provide a more definitive confidence level (e.g., 80 for a strong over or 30 for a strong under). "
+                    "If a player accrued 0 in all of their stats, assume they did NOT play in that game. "
                     "Do not be conservative with your decision...I already know there is a chance the player could or could not hit their prop. Go as far left or right as you wish based on the data."
                     "Please format your response as follows:\n"
                     "Confidence Level: <confidence_level>\n"

@@ -14,7 +14,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { db } from "./firebase.js";
+import { db, auth } from "./firebase.js"; // Import auth from firebase.js
 import { 
   collection, 
   getDocs, 
@@ -25,6 +25,7 @@ import {
   limit 
 } from "firebase/firestore";
 import { useMediaQuery } from "react-responsive";
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth"; // Import Firebase auth functions
 
 // Utility function to normalize names
 const normalizeName = (name) => {
@@ -62,6 +63,10 @@ export default function Home() {
   const [gameStatsModal, setGameStatsModal] = useState(null);
   const [reasonIndex, setReasonIndex] = useState(1);
   const [selectedStat, setSelectedStat] = useState("Points"); // Default to Points
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // Login modal state
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Login status
+  const [isVerified, setIsVerified] = useState(false); // Verification status
+  const [loginSuccess, setLoginSuccess] = useState(false); // Login success message
 
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
 
@@ -153,7 +158,7 @@ export default function Home() {
 
   // Poll Firestore for each player's analysis result
   useEffect(() => {
-    if (players.length === 0) return;
+    if (players.length === 0 || isLoginModalOpen) return; // Disable polling if login modal is open
 
     const interval = setInterval(async () => {
       let updatedResults = {};
@@ -175,62 +180,201 @@ export default function Home() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [players]);
+  }, [players, isLoginModalOpen]); // Add isLoginModalOpen to dependency array
 
-  // Fetch last 5 games from Firestore
-  const openLast5GamesModal = async (player) => {
-    try {
-      const playerNameFirestore = player.displayName.replace(/ /g, "_");
-
-      // Fetch the most recent 5 games for the player from players/{player_name}/games
-      const gamesCollection = collection(db, `players/${playerNameFirestore}/games`);
-      const gamesQuery = query(
-        gamesCollection,
-        orderBy("game_date", "desc"), // Sort by game_date in descending order
-        limit(5) // Limit to 5 most recent games
-      );
-
-      const gamesSnapshot = await getDocs(gamesQuery);
-
-      if (gamesSnapshot.empty) {
-        console.log("No games found for player:", playerNameFirestore);
-        return;
+  // Handle login state persistence
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setIsLoggedIn(true);
+        localStorage.setItem("isLoggedIn", "true"); // Store login state in localStorage
+        // Check if the user is verified
+        getDoc(doc(db, "users", user.uid)).then((doc) => {
+          if (doc.exists() && doc.data().verified) {
+            setIsVerified(true);
+            localStorage.setItem("isVerified", "true"); // Store verification state in localStorage
+          } else {
+            setIsVerified(false);
+            localStorage.removeItem("isVerified");
+          }
+        });
+      } else {
+        setIsLoggedIn(false);
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("isVerified");
       }
+    });
+    return () => unsubscribe();
+  }, []);
 
-      const gamesData = gamesSnapshot.docs.map((doc) => {
-        const gameData = doc.data();
-        return {
-          game_id: doc.id,
-          ...gameData, // This includes the stats field
-        };
-      });
+  // On component mount, check localStorage for login state
+  useEffect(() => {
+    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
+    const verified = localStorage.getItem("isVerified") === "true";
+    if (loggedIn) {
+      setIsLoggedIn(true);
+      if (verified) {
+        setIsVerified(true);
+      }
+    }
+  }, []);
 
-      // Calculate the stat-specific data for the last 5 games
-      const statData = gamesData.map((game) => {
-        switch (player.stat_type) {
-          case "Points":
-            return game.pts || 0; // Points
-          case "Rebounds":
-            return game.reb || 0; // Rebounds
-          case "Assists":
-            return game.ast || 0; // Assists
-          case "Pts+Rebs+Asts":
-            return (game.pts || 0) + (game.reb || 0) + (game.ast || 0); // Pts+Rebs+Asts
-          default:
-            return 0; // Fallback
-        }
-      });
+  useEffect(() => {
+    if (!isLoginModalOpen) {
+      setLoginSuccess(false); // Reset success message when modal is closed
+    }
+  }, [isLoginModalOpen]);
 
-      console.log("Fetched last 5 games for", playerNameFirestore, gamesData);
-      setLast5GamesModal({
-        ...player,
-        last_5_games: gamesData,
-        stat_data: statData, // Stat-specific data for the chart
-      });
+  // Handle login
+  const handleLogin = async (email, password) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+  
+      // Check if the user is verified in Firestore
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists() && userDoc.data().verified) {
+        setIsLoggedIn(true);
+        setIsVerified(true);
+        setLoginSuccess(true); // Show success message
+        setTimeout(() => {
+          setIsLoginModalOpen(false); // Close modal after 2 seconds
+          setLoginSuccess(false); // Reset success message
+        }, 2000);
+      } else {
+        alert("Your account is not verified. Please contact support.");
+      }
     } catch (error) {
-      console.error("Error fetching last 5 games:", error);
+      console.error("Login error:", error);
+      alert("Login failed. Please check your credentials.");
     }
   };
+
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setIsLoggedIn(false);
+      setIsVerified(false);
+      setLoginSuccess(false); // Reset login success message
+      alert("Logged out successfully!");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
+  // Login Modal
+  const LoginModal = () => (
+    <motion.div
+      className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        className="modal p-6 w-11/12 sm:max-w-md relative bg-gray-800 rounded-lg"
+        initial={{ scale: 0.9 }}
+        animate={{ scale: 1 }}
+        exit={{ scale: 0.9 }}
+      >
+        <button
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-300"
+          onClick={() => {
+            setIsLoginModalOpen(false);
+            setLoginSuccess(false); // Reset success message when modal is closed
+          }}
+        >
+          &times;
+        </button>
+        <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">Login</h2>
+        {loginSuccess ? (
+          <div className="text-green-500 text-center">Signed in successfully!</div>
+        ) : (
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const email = e.target.email.value;
+              const password = e.target.password.value;
+              await handleLogin(email, password);
+            }}
+          >
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              required
+            />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              className="w-full bg-gray-700 text-white rounded-lg px-4 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              required
+            />
+            <button
+              type="submit"
+              className="w-full bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+            >
+              Login
+            </button>
+          </form>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+
+  // Update the login button in the header
+  const renderLoginButton = () => (
+    <button
+      onClick={isLoggedIn ? handleLogout : () => setIsLoginModalOpen(true)}
+      className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+    >
+      {isLoggedIn ? "Logout" : "Login"}
+    </button>
+  );
+
+  // Render the tabs
+  const renderTabs = () => (
+    <div className="fixed top-16 left-0 w-full bg-gray-900 py-2 z-40 shadow-md">
+      <div className="container mx-auto px-4">
+        <div className="overflow-x-auto">
+          <div className="flex gap-2 whitespace-nowrap">
+            {statTabs.map((stat) => (
+              <button
+                key={stat}
+                className={`px-3 py-1 rounded-lg transition-colors text-sm ${
+                  selectedStat === stat
+                    ? "bg-orange-500 text-white"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                }`}
+                onClick={() => setSelectedStat(stat)}
+              >
+                {stat}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Filter players by selected stat
+  const playersForSelectedStat = selectedStat === "Popular" 
+    ? Object.values(highestConfidencePlayers) 
+    : filteredPlayers.filter((player) => player.stat_type === selectedStat);
+
+  // Find the player with the highest confidence in each category
+  const highestConfidencePlayers = {};
+  statTabs.forEach((stat) => {
+    const playersForStat = filteredPlayers.filter((player) => player.stat_type === stat);
+    if (playersForStat.length > 0) {
+      const highestConfidencePlayer = playersForStat.reduce((prev, current) => 
+        (prev.confidence_level > current.confidence_level) ? prev : current
+      );
+      highestConfidencePlayers[stat] = highestConfidencePlayer;
+    }
+  });
 
   // Render the Last 5 Games Modal
   const renderLast5GamesModal = () => {
@@ -448,48 +592,6 @@ export default function Home() {
     setReasonIndex((prev) => (prev > 1 ? prev - 1 : 5));
   };
 
-  // Find the player with the highest confidence in each category
-  const highestConfidencePlayers = {};
-  statTabs.forEach((stat) => {
-    const playersForStat = filteredPlayers.filter((player) => player.stat_type === stat);
-    if (playersForStat.length > 0) {
-      const highestConfidencePlayer = playersForStat.reduce((prev, current) => 
-        (prev.confidence_level > current.confidence_level) ? prev : current
-      );
-      highestConfidencePlayers[stat] = highestConfidencePlayer;
-    }
-  });
-
-  // Render the tabs
-  const renderTabs = () => (
-    <div className="fixed top-16 left-0 w-full bg-gray-900 py-2 z-40 shadow-md">
-      <div className="container mx-auto px-4">
-        <div className="overflow-x-auto">
-          <div className="flex gap-2 whitespace-nowrap">
-            {statTabs.map((stat) => (
-              <button
-                key={stat}
-                className={`px-3 py-1 rounded-lg transition-colors text-sm ${
-                  selectedStat === stat
-                    ? "bg-orange-500 text-white"
-                    : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                }`}
-                onClick={() => setSelectedStat(stat)}
-              >
-                {stat}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Filter players by selected stat
-  const playersForSelectedStat = selectedStat === "Popular" 
-    ? Object.values(highestConfidencePlayers) 
-    : filteredPlayers.filter((player) => player.stat_type === selectedStat);
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-900">
@@ -511,22 +613,25 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
       {/* Header */}
       <header className="fixed top-0 left-0 w-full bg-gradient-to-r from-blue-600 to-purple-600 py-4 shadow-lg z-50">
-        <div className="container mx-auto px-4 flex flex-col gap-4"> {/* Increased gap to 4 */}
+        <div className="container mx-auto px-4 flex flex-col gap-4">
           <div className="flex justify-between items-center">
             {/* Logo and Title */}
-            <h1 className="text-lg sm:text-3xl font-bold text-white flex items-center"> {/* Reduced text size on mobile */}
+            <h1 className="text-lg sm:text-3xl font-bold text-white flex items-center">
               <img src="/logo.jpg" alt="MOD-Duel Logo" className="h-8 sm:h-10 mr-2 rounded-full" />
               MOD-Duel Prop Confidence
             </h1>
 
-            {/* Search Bar */}
-            <input
-              type="text"
-              placeholder="Search players..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white w-32 sm:w-64 placeholder:text-white/70 text-sm sm:text-base"
-            />
+            {/* Search Bar and Login Button */}
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                placeholder="Search players..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white w-32 sm:w-64 placeholder:text-white/70 text-sm sm:text-base"
+              />
+              {renderLoginButton()}
+            </div>
           </div>
           {/* Render the tabs */}
           {renderTabs()}
@@ -535,7 +640,7 @@ export default function Home() {
 
       {/* Main Content */}
       <motion.div
-        className="container mx-auto p-4 sm:p-8 pt-32 sm:pt-40 relative z-10" // Increased top padding for mobile
+        className="container mx-auto p-4 sm:p-8 pt-32 sm:pt-40 relative z-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -554,16 +659,28 @@ export default function Home() {
                   ? "bg-gradient-to-r from-orange-400 to-orange-600" // 26-50: Orange
                   : "bg-gradient-to-r from-red-400 to-red-600"; // 0-25: Red
               const isHighestConfidence = highestConfidencePlayers[selectedStat]?.id === player.id;
+              const isFirstPick = index === 0; // Only show the first pick for each tab (except Popular)
+              const isPopularTab = selectedStat === "Popular";
+              const isPaywalled = !isLoggedIn || !isVerified;
 
               return (
                 <motion.div
                   key={index}
-                  className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 sm:p-6 text-center shadow-xl relative hover:shadow-2xl transition-shadow"
+                  className={`relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 sm:p-6 text-center shadow-xl hover:shadow-2xl transition-shadow ${
+                    isPaywalled && !isFirstPick && !isPopularTab ? "blur-sm pointer-events-none" : ""
+                  }`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   whileHover={{ scale: 1.05 }}
                 >
+                  {/* Blur overlay for paywalled content */}
+                  {isPaywalled && !isFirstPick && !isPopularTab && (
+                    <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex justify-center items-center">
+                      <span className="text-white text-lg font-semibold">Login to Unlock</span>
+                    </div>
+                  )}
+
                   {/* Yellow star for popular players */}
                   {isHighestConfidence && (
                     <span className="absolute top-2 left-2 text-yellow-400 text-2xl">⭐</span>
@@ -909,6 +1026,9 @@ export default function Home() {
           </motion.div>
         </motion.div>
       )}
+
+      {/* Login Modal */}
+      {isLoginModalOpen && <LoginModal />}
 
       {/* Footer */}
       <footer className="bg-gray-800 text-white py-6 mt-auto">
