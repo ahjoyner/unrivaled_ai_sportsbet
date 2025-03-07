@@ -339,16 +339,6 @@ export default function Home() {
     </motion.div>
   );
 
-  // Update the login button in the header
-  const renderLoginButton = () => (
-    <button
-      onClick={isLoggedIn ? handleLogout : () => setIsLoginModalOpen(true)}
-      className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
-    >
-      {isLoggedIn ? "Logout" : "Login"}
-    </button>
-  );
-
   // Render the tabs
   const renderTabs = () => (
     <div className="fixed top-16 left-0 w-full bg-gray-900 py-2 z-40 shadow-md">
@@ -635,59 +625,42 @@ export default function Home() {
               <img src="/logo.jpg" alt="MOD-Duel Logo" className="h-8 sm:h-10 mr-2 rounded-full" />
               MOD-Duel Prop Confidence
             </h1>
-
-            {/* Search Bar and Login Button */}
-            <div className="flex flex-col sm:flex-row items-center gap-2 mt-4 w-full max-w-md mx-auto">
-              <input
-                type="text"
-                placeholder="Search players..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full sm:flex-1 bg-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white placeholder:text-white/70 text-sm sm:text-base"
-              />
-              <button
-                onClick={isLoggedIn ? handleLogout : () => setIsLoginModalOpen(true)}
-                className="w-full sm:w-auto bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-sm sm:text-base whitespace-nowrap"
-              >
-                {isLoggedIn ? "Logout" : "Login"}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Sticky Stat Tabs */}
-        <div className="sticky top-16 bg-gray-900 py-2 z-40 shadow-md"> {/* top-16 matches the header height */}
-          <div className="container mx-auto px-4">
-            <div className="overflow-x-auto">
-              <div className="flex gap-2 whitespace-nowrap">
-                {statTabs.map((stat) => (
-                  <button
-                    key={stat}
-                    className={`px-3 py-1 rounded-lg transition-colors text-sm ${
-                      selectedStat === stat
-                        ? "bg-orange-500 text-white"
-                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
-                    }`}
-                    onClick={() => setSelectedStat(stat)}
-                  >
-                    {stat}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </header>
 
+      {/* Fixed Stat Tabs */}
+      <div className="fixed top-16 left-0 w-full bg-gray-900 py-2 shadow-md z-40"> {/* top-16 matches the header height */}
+        <div className="container mx-auto px-4">
+          <div className="overflow-x-auto">
+            <div className="flex gap-2 whitespace-nowrap">
+              {statTabs.map((stat) => (
+                <button
+                  key={stat}
+                  className={`px-3 py-1 rounded-lg transition-colors text-sm ${
+                    selectedStat === stat
+                      ? "bg-orange-500 text-white"
+                      : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                  }`}
+                  onClick={() => setSelectedStat(stat)}
+                >
+                  {stat}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Main Content */}
       <motion.div
-        className="container mx-auto p-4 sm:p-8 pt-32 sm:pt-40 relative z-10" // Add pt-32 sm:pt-40 for padding
+        className="container mx-auto p-4 sm:p-8 pt-48 sm:pt-56 relative z-10" // Add pt-48 sm:pt-56 for padding
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
         {/* Render the players filtered by selected stat */}
-        <div className={`grid ${isMobile ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-4 sm:gap-6 mt-4`}>
+        <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-4 sm:gap-6`}>
           {playersForSelectedStat.length > 0 ? (
             playersForSelectedStat.map((player, index) => {
               const confidence = player.confidence_level || 0;
@@ -699,21 +672,16 @@ export default function Home() {
                   : confidence >= 26
                   ? "bg-gradient-to-r from-orange-400 to-orange-600" // 26-50: Orange
                   : "bg-gradient-to-r from-red-400 to-red-600"; // 0-25: Red
-
-              // Check if the player is a top pick for their stat type
-              const isTopPick = topPicks[player.stat_type] === player.id;
-
               const isHighestConfidence = highestConfidencePlayers[selectedStat]?.id === player.id;
-
-              // Apply blur only if the player is NOT a top pick AND the user is not logged in/verified
+              const isFirstPick = index === 0; // Only show the first pick for each tab (except Popular)
+              const isPopularTab = selectedStat === "Popular";
               const isPaywalled = !isLoggedIn || !isVerified;
-              const shouldBlur = !isTopPick && isPaywalled;
 
               return (
                 <motion.div
                   key={index}
                   className={`relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 sm:p-6 text-center shadow-xl hover:shadow-2xl transition-shadow ${
-                    shouldBlur ? "blur-md pointer-events-none" : ""
+                    isPaywalled && !isFirstPick && !isPopularTab ? "blur-sm pointer-events-none" : ""
                   }`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -721,7 +689,7 @@ export default function Home() {
                   whileHover={{ scale: 1.05 }}
                 >
                   {/* Blur overlay for paywalled content */}
-                  {shouldBlur && (
+                  {isPaywalled && !isFirstPick && !isPopularTab && (
                     <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex justify-center items-center">
                       <span className="text-white text-lg font-semibold">Login to Unlock</span>
                     </div>
@@ -741,7 +709,7 @@ export default function Home() {
                   </button>
 
                   {/* Player Headshot */}
-                  <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-700 rounded-full mx-auto mb-4 overflow-hidden">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-700 rounded-full mx-auto mb-4 overflow-hidden">
                     {player.headshot_url ? (
                       <img
                         src={player.headshot_url}
@@ -765,7 +733,7 @@ export default function Home() {
                   </p>
 
                   {/* Confidence Bar */}
-                  <div className="mt-6">
+                  <div className="mt-4">
                     <div className="w-full bg-gray-700 rounded-full h-2.5">
                       <div
                         className={`h-2.5 rounded-full confidence-bar ${confidenceColor} ${confidence >= 70 ? "pulse" : ""}`}
@@ -805,6 +773,27 @@ export default function Home() {
           )}
         </div>
       </motion.div>
+
+      {/* Floating Action Bar */}
+      <div className="fixed bottom-0 left-0 w-full bg-gray-900 py-3 shadow-lg z-50">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              placeholder="Search players..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="flex-1 bg-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white placeholder:text-white/70 text-sm"
+            />
+            <button
+              onClick={isLoggedIn ? handleLogout : () => setIsLoginModalOpen(true)}
+              className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-sm whitespace-nowrap"
+            >
+              {isLoggedIn ? "Logout" : "Login"}
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Selected Player Modal */}
       {selectedPlayer && (
