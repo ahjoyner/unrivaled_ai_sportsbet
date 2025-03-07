@@ -511,18 +511,21 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
       {/* Header */}
       <header className="fixed top-0 left-0 w-full bg-gradient-to-r from-blue-600 to-purple-600 py-4 shadow-lg z-50">
-        <div className="container mx-auto px-4 flex flex-col gap-2">
+        <div className="container mx-auto px-4 flex flex-col gap-4"> {/* Increased gap to 4 */}
           <div className="flex justify-between items-center">
-            <h1 className="text-xl sm:text-3xl font-bold text-white flex items-center">
+            {/* Logo and Title */}
+            <h1 className="text-lg sm:text-3xl font-bold text-white flex items-center"> {/* Reduced text size on mobile */}
               <img src="/logo.jpg" alt="MOD-Duel Logo" className="h-8 sm:h-10 mr-2 rounded-full" />
               MOD-Duel Prop Confidence
             </h1>
+
+            {/* Search Bar */}
             <input
               type="text"
               placeholder="Search players..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white w-32 sm:w-64 placeholder:text-white/70"
+              className="bg-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white w-32 sm:w-64 placeholder:text-white/70 text-sm sm:text-base"
             />
           </div>
           {/* Render the tabs */}
@@ -555,28 +558,26 @@ export default function Home() {
               return (
                 <motion.div
                   key={index}
-                  className={`bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 sm:p-6 text-center shadow-xl relative hover:shadow-2xl transition-shadow ${
-                    isHighestConfidence ? "flame-border" : ""
-                  }`}
+                  className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 sm:p-6 text-center shadow-xl relative hover:shadow-2xl transition-shadow"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   whileHover={{ scale: 1.05 }}
                 >
+                  {/* Yellow star for popular players */}
                   {isHighestConfidence && (
-                    <div className="flame-animation">
-                      {/* Add flame animation here */}
-                      <div className="flame"></div>
-                      <div className="flame"></div>
-                      <div className="flame"></div>
-                    </div>
+                    <span className="absolute top-2 left-2 text-yellow-400 text-2xl">⭐</span>
                   )}
+
+                  {/* Last 5 Games Button */}
                   <button
                     className="absolute top-2 right-2 bg-gray-700 text-white px-2 py-1 rounded-lg hover:bg-gray-600 transition-colors"
                     onClick={() => openLast5GamesModal(player)}
                   >
                     L5
                   </button>
+
+                  {/* Player Headshot */}
                   <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-700 rounded-full mx-auto mb-4 overflow-hidden">
                     {player.headshot_url ? (
                       <img
@@ -588,13 +589,19 @@ export default function Home() {
                       <div className="w-full h-full bg-gray-700"></div>
                     )}
                   </div>
+
+                  {/* Player Info */}
                   <p className="text-gray-400 text-sm">
                     {player.team} - {player.position}
                   </p>
-                  <p className={`text-white ${isMobile ? "text-base" : "text-lg sm:text-xl"} font-semibold mt-2`}>{player.displayName}</p>
+                  <p className={`text-white ${isMobile ? "text-base" : "text-lg sm:text-xl"} font-semibold mt-2`}>
+                    {player.displayName}
+                  </p>
                   <p className={`text-white ${isMobile ? "text-lg" : "text-xl sm:text-2xl"} font-bold mt-4`}>
                     {player.prop_line} <span className="text-sm text-gray-400">{player.stat_type.toLowerCase()}</span>
                   </p>
+
+                  {/* Confidence Bar */}
                   <div className="mt-6">
                     <div className="w-full bg-gray-700 rounded-full h-2.5">
                       <div
@@ -610,6 +617,8 @@ export default function Home() {
                       <span>100</span>
                     </div>
                   </div>
+
+                  {/* View Analysis Button */}
                   <button
                     className="mt-4 bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors w-full"
                     onClick={() =>
@@ -771,7 +780,7 @@ export default function Home() {
                     {reasonIndex === 4 && "🔍 Recent Performance"}
                   </span>
                   <span className="text-gray-400 text-xs">
-                    Section {reasonIndex} of 4
+                    Section {reasonIndex}/4
                   </span>
                 </div>
                 <p
