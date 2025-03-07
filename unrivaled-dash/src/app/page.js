@@ -667,7 +667,7 @@ export default function Home() {
                 <motion.div
                   key={index}
                   className={`relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 sm:p-6 text-center shadow-xl hover:shadow-2xl transition-shadow ${
-                    isPaywalled && !isFirstPick && !isPopularTab ? "blur-sm pointer-events-none" : ""
+                    isPaywalled && !isFirstPick && !isPopularTab ? "blur-md pointer-events-none" : ""
                   }`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
