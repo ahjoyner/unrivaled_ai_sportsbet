@@ -626,7 +626,9 @@ export default function Home() {
             })
           ) : (
             <div className="col-span-full text-center text-gray-400">
-              {selectedStat === "Points" ? "No players found." : "Coming Soon!"}
+              {playersForSelectedStat.length === 0
+                ? `No prop available for ${selectedStat.toLowerCase()}`
+                : "No players found."}
             </div>
           )}
         </div>
