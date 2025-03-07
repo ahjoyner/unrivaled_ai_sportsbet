@@ -67,6 +67,7 @@ export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Login status
   const [isVerified, setIsVerified] = useState(false); // Verification status
   const [loginSuccess, setLoginSuccess] = useState(false); // Login success message
+  const [topPicks, setTopPicks] = useState({}); // Track top picks for each stat type
 
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
 
@@ -143,6 +144,20 @@ export default function Home() {
             };
           })
         );
+
+        // Determine top picks for each stat type
+        const topPicksMap = {};
+        statTabs.forEach((stat) => {
+          const playersForStat = playerProjections.filter((player) => player.stat_type === stat);
+          if (playersForStat.length > 0) {
+            const topPick = playersForStat.reduce((prev, current) => 
+              (prev.confidence_level > current.confidence_level) ? prev : current
+            );
+            topPicksMap[stat] = topPick.id; // Store the ID of the top pick
+          }
+        });
+
+        setTopPicks(topPicksMap); // Update topPicks state
 
         setPlayers(playerProjections);
         setFilteredPlayers(playerProjections);
@@ -612,46 +627,67 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
       {/* Header */}
-      <header className="fixed top-0 left-0 w-full bg-gradient-to-r from-blue-600 to-purple-600 py-4 shadow-lg z-50">
+      <header className="fixed top-0 left-0 w-full bg-gradient-to-b from-gray-900 to-gray-800 py-4 shadow-lg z-50">
         <div className="container mx-auto px-4">
           {/* Title and Logo */}
-          <div className="flex flex-col items-center sm:flex-row sm:justify-between">
+          <div className="flex flex-col items-center">
             <h1 className="text-lg sm:text-2xl font-bold text-white flex items-center">
               <img src="/logo.jpg" alt="MOD-Duel Logo" className="h-8 sm:h-10 mr-2 rounded-full" />
               MOD-Duel Prop Confidence
             </h1>
 
             {/* Search Bar and Login Button */}
-            <div className="flex items-center gap-2 mt-4 sm:mt-0">
+            <div className="flex flex-col sm:flex-row items-center gap-2 mt-4 w-full max-w-md mx-auto">
               <input
                 type="text"
                 placeholder="Search players..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white w-32 sm:w-64 placeholder:text-white/70 text-sm sm:text-base"
+                className="w-full sm:flex-1 bg-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white placeholder:text-white/70 text-sm sm:text-base"
               />
               <button
                 onClick={isLoggedIn ? handleLogout : () => setIsLoginModalOpen(true)}
-                className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-sm sm:text-base"
+                className="w-full sm:w-auto bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-sm sm:text-base whitespace-nowrap"
               >
                 {isLoggedIn ? "Logout" : "Login"}
               </button>
             </div>
           </div>
         </div>
-        {/* Render the tabs */}
-        {renderTabs()}
+
+        {/* Sticky Stat Tabs */}
+        <div className="sticky top-16 bg-gray-900 py-2 z-40 shadow-md"> {/* top-16 matches the header height */}
+          <div className="container mx-auto px-4">
+            <div className="overflow-x-auto">
+              <div className="flex gap-2 whitespace-nowrap">
+                {statTabs.map((stat) => (
+                  <button
+                    key={stat}
+                    className={`px-3 py-1 rounded-lg transition-colors text-sm ${
+                      selectedStat === stat
+                        ? "bg-orange-500 text-white"
+                        : "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                    }`}
+                    onClick={() => setSelectedStat(stat)}
+                  >
+                    {stat}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </header>
 
       {/* Main Content */}
       <motion.div
-        className="container mx-auto p-4 sm:p-8 pt-32 sm:pt-40 relative z-10"
+        className="container mx-auto p-4 sm:p-8 pt-32 sm:pt-40 relative z-10" // Add pt-32 sm:pt-40 for padding
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
         {/* Render the players filtered by selected stat */}
-        <div className={`grid ${isMobile ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-4 sm:gap-6`}>
+        <div className={`grid ${isMobile ? "grid-cols-2" : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"} gap-4 sm:gap-6 mt-4`}>
           {playersForSelectedStat.length > 0 ? (
             playersForSelectedStat.map((player, index) => {
               const confidence = player.confidence_level || 0;
@@ -663,15 +699,21 @@ export default function Home() {
                   : confidence >= 26
                   ? "bg-gradient-to-r from-orange-400 to-orange-600" // 26-50: Orange
                   : "bg-gradient-to-r from-red-400 to-red-600"; // 0-25: Red
+
+              // Check if the player is a top pick for their stat type
+              const isTopPick = topPicks[player.stat_type] === player.id;
+
               const isHighestConfidence = highestConfidencePlayers[selectedStat]?.id === player.id;
-              const isFirstPick = index === 0; // Only show the first pick for each tab (except Popular)
+
+              // Apply blur only if the player is NOT a top pick AND the user is not logged in/verified
               const isPaywalled = !isLoggedIn || !isVerified;
+              const shouldBlur = !isTopPick && isPaywalled;
 
               return (
                 <motion.div
                   key={index}
                   className={`relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 sm:p-6 text-center shadow-xl hover:shadow-2xl transition-shadow ${
-                    isPaywalled && !isFirstPick ? "blur-md pointer-events-none" : ""
+                    shouldBlur ? "blur-md pointer-events-none" : ""
                   }`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -679,7 +721,7 @@ export default function Home() {
                   whileHover={{ scale: 1.05 }}
                 >
                   {/* Blur overlay for paywalled content */}
-                  {isPaywalled && !isFirstPick && (
+                  {shouldBlur && (
                     <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex justify-center items-center">
                       <span className="text-white text-lg font-semibold">Login to Unlock</span>
                     </div>

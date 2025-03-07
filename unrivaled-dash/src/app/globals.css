@@ -143,6 +143,27 @@ body {
   animation-delay: 1s;
 }
 
+/* Ensure the header has enough padding on mobile */
+header {
+  padding-bottom: 1rem; /* Adjust as needed */
+}
+
+/* Ensure the stat tabs scroll smoothly on mobile */
+.stat-tabs-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  scrollbar-width: none; /* Hide scrollbar on Firefox */
+}
+
+.stat-tabs-container::-webkit-scrollbar {
+  display: none; /* Hide scrollbar on Chrome/Safari */
+}
+
+/* Ensure the search bar and login button are full width on mobile */
+.search-login-container {
+  width: 100%;
+}
+
 @keyframes flame {
   0% {
     transform: scale(1);
