@@ -102,6 +102,62 @@ body {
   background: rgba(75, 85, 99, 0.8);
 }
 
+.flame-border {
+  position: relative;
+  overflow: hidden;
+}
+
+.flame-animation {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  z-index: -1;
+}
+
+.flame {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(45deg, #ff9a00, #ff2d00);
+  border-radius: 50%;
+  animation: flame 1.5s infinite;
+}
+
+.flame:nth-child(1) {
+  top: 0;
+  left: 0;
+  animation-delay: 0s;
+}
+
+.flame:nth-child(2) {
+  top: 0;
+  right: 0;
+  animation-delay: 0.5s;
+}
+
+.flame:nth-child(3) {
+  bottom: 0;
+  left: 50%;
+  animation-delay: 1s;
+}
+
+@keyframes flame {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 /* Mobile-specific font sizes */
 @media (max-width: 768px) {
   .mobile-smaller-text {

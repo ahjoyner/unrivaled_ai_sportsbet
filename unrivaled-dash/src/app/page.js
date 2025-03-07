@@ -76,7 +76,7 @@ export default function Home() {
   );
 
   // Define the available stat types
-  const statTabs = ["Points", "Rebounds", "Assists", "Pts+Rebs+Asts"];
+  const statTabs = ["Points", "Rebounds", "Assists", "Pts+Rebs+Asts", "Popular"];
 
   // Fetch players and their prop lines from Firestore
   useEffect(() => {
@@ -448,6 +448,18 @@ export default function Home() {
     setReasonIndex((prev) => (prev > 1 ? prev - 1 : 5));
   };
 
+  // Find the player with the highest confidence in each category
+  const highestConfidencePlayers = {};
+  statTabs.forEach((stat) => {
+    const playersForStat = filteredPlayers.filter((player) => player.stat_type === stat);
+    if (playersForStat.length > 0) {
+      const highestConfidencePlayer = playersForStat.reduce((prev, current) => 
+        (prev.confidence_level > current.confidence_level) ? prev : current
+      );
+      highestConfidencePlayers[stat] = highestConfidencePlayer;
+    }
+  });
+
   // Render the tabs
   const renderTabs = () => (
     <div className="fixed top-16 left-0 w-full bg-gray-900 py-2 z-40 shadow-md"> {/* Fixed position above player boxes */}
@@ -472,7 +484,9 @@ export default function Home() {
   );
 
   // Filter players by selected stat
-  const playersForSelectedStat = filteredPlayers.filter((player) => player.stat_type === selectedStat);
+  const playersForSelectedStat = selectedStat === "Popular" 
+    ? Object.values(highestConfidencePlayers) 
+    : filteredPlayers.filter((player) => player.stat_type === selectedStat);
 
   if (loading) {
     return (
@@ -526,16 +540,35 @@ export default function Home() {
           {playersForSelectedStat.length > 0 ? (
             playersForSelectedStat.map((player, index) => {
               const confidence = player.confidence_level || 0;
-              const confidenceColor = confidence >= 51 ? "bg-gradient-to-r from-green-400 to-blue-500" : "bg-gradient-to-r from-red-400 to-pink-500";
+              const confidenceColor =
+                confidence >= 76
+                  ? "bg-gradient-to-r from-green-400 to-green-600" // 76-100: Green
+                  : confidence >= 51
+                  ? "bg-gradient-to-r from-yellow-400 to-yellow-600" // 51-75: Yellow
+                  : confidence >= 26
+                  ? "bg-gradient-to-r from-orange-400 to-orange-600" // 26-50: Orange
+                  : "bg-gradient-to-r from-red-400 to-red-600"; // 0-25: Red
+              const isHighestConfidence = highestConfidencePlayers[selectedStat]?.id === player.id;
+
               return (
                 <motion.div
                   key={index}
-                  className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 sm:p-6 text-center shadow-xl relative hover:shadow-2xl transition-shadow"
+                  className={`bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 sm:p-6 text-center shadow-xl relative hover:shadow-2xl transition-shadow ${
+                    isHighestConfidence ? "flame-border" : ""
+                  }`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   whileHover={{ scale: 1.05 }}
                 >
+                  {isHighestConfidence && (
+                    <div className="flame-animation">
+                      {/* Add flame animation here */}
+                      <div className="flame"></div>
+                      <div className="flame"></div>
+                      <div className="flame"></div>
+                    </div>
+                  )}
                   <button
                     className="absolute top-2 right-2 bg-gray-700 text-white px-2 py-1 rounded-lg hover:bg-gray-600 transition-colors"
                     onClick={() => openLast5GamesModal(player)}
@@ -629,14 +662,16 @@ export default function Home() {
                   </span>
                 </div>
                 <div className="flex flex-col items-center">
-                  <span className="text-orange-400 text-sm font-semibold">Line</span>
-                  <span className="text-white text-xl font-bold">
-                    {selectedPlayer.prop_line} <span className="text-xs text-gray-400">{selectedPlayer.stat_type.toLowerCase()}</span>
-                  </span>
+                  <span className="text-orange-400 text-sm font-semibold text-center">Line</span>
+                  <div className="flex flex-col items-center">
+                    <span className="text-white text-xl font-bold text-center">
+                      {selectedPlayer.prop_line}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex flex-col items-center">
                   <span className="text-orange-400 text-sm font-semibold">Stat</span>
-                  <span className="text-white text-xl font-bold">
+                  <span className="text-white text-l font-bold">
                     {selectedPlayer.stat_type}
                   </span>
                 </div>

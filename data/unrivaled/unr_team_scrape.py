@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 import os
 
 # Initialize Firebase
-cred = credentials.Certificate("secrets/firebase_key.json")
+cred = credentials.Certificate("../../secrets/firebase_key.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client(database_id="unrivaled-db")
 
