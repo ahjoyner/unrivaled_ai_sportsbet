@@ -359,11 +359,6 @@ export default function Home() {
     </div>
   );
 
-  // Filter players by selected stat
-  const playersForSelectedStat = selectedStat === "Popular" 
-    ? Object.values(highestConfidencePlayers) 
-    : filteredPlayers.filter((player) => player.stat_type === selectedStat);
-
   // Find the player with the highest confidence in each category
   const highestConfidencePlayers = {};
   statTabs.forEach((stat) => {
@@ -375,6 +370,11 @@ export default function Home() {
       highestConfidencePlayers[stat] = highestConfidencePlayer;
     }
   });
+
+  // Filter players by selected stat
+  const playersForSelectedStat = selectedStat === "Popular" 
+    ? Object.values(highestConfidencePlayers) 
+    : filteredPlayers.filter((player) => player.stat_type === selectedStat);
 
   // Render the Last 5 Games Modal
   const renderLast5GamesModal = () => {
@@ -613,16 +613,16 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
       {/* Header */}
       <header className="fixed top-0 left-0 w-full bg-gradient-to-r from-blue-600 to-purple-600 py-4 shadow-lg z-50">
-        <div className="container mx-auto px-4 flex flex-col gap-4">
-          <div className="flex justify-between items-center">
-            {/* Logo and Title */}
-            <h1 className="text-lg sm:text-3xl font-bold text-white flex items-center">
+        <div className="container mx-auto px-4">
+          {/* Title and Logo */}
+          <div className="flex flex-col items-center sm:flex-row sm:justify-between">
+            <h1 className="text-lg sm:text-2xl font-bold text-white flex items-center">
               <img src="/logo.jpg" alt="MOD-Duel Logo" className="h-8 sm:h-10 mr-2 rounded-full" />
               MOD-Duel Prop Confidence
             </h1>
 
             {/* Search Bar and Login Button */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mt-4 sm:mt-0">
               <input
                 type="text"
                 placeholder="Search players..."
@@ -630,12 +630,17 @@ export default function Home() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="bg-white/20 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-white w-32 sm:w-64 placeholder:text-white/70 text-sm sm:text-base"
               />
-              {renderLoginButton()}
+              <button
+                onClick={isLoggedIn ? handleLogout : () => setIsLoginModalOpen(true)}
+                className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors text-sm sm:text-base"
+              >
+                {isLoggedIn ? "Logout" : "Login"}
+              </button>
             </div>
           </div>
-          {/* Render the tabs */}
-          {renderTabs()}
         </div>
+        {/* Render the tabs */}
+        {renderTabs()}
       </header>
 
       {/* Main Content */}
@@ -660,14 +665,13 @@ export default function Home() {
                   : "bg-gradient-to-r from-red-400 to-red-600"; // 0-25: Red
               const isHighestConfidence = highestConfidencePlayers[selectedStat]?.id === player.id;
               const isFirstPick = index === 0; // Only show the first pick for each tab (except Popular)
-              const isPopularTab = selectedStat === "Popular";
               const isPaywalled = !isLoggedIn || !isVerified;
 
               return (
                 <motion.div
                   key={index}
                   className={`relative bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg p-4 sm:p-6 text-center shadow-xl hover:shadow-2xl transition-shadow ${
-                    isPaywalled && !isFirstPick && !isPopularTab ? "blur-md pointer-events-none" : ""
+                    isPaywalled && !isFirstPick ? "blur-md pointer-events-none" : ""
                   }`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -675,7 +679,7 @@ export default function Home() {
                   whileHover={{ scale: 1.05 }}
                 >
                   {/* Blur overlay for paywalled content */}
-                  {isPaywalled && !isFirstPick && !isPopularTab && (
+                  {isPaywalled && !isFirstPick && (
                     <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg flex justify-center items-center">
                       <span className="text-white text-lg font-semibold">Login to Unlock</span>
                     </div>
